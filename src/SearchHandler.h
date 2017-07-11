@@ -10,8 +10,8 @@ class SearchHandler : public Poco::Net::HTTPRequestHandler {
  public:
   void handleRequest(Poco::Net::HTTPServerRequest &request,
                      Poco::Net::HTTPServerResponse &response);
-  bool checkParams(const std::map<std::string, std::string>& params
-                   const std::map<std::string, std::string>& result);
+  bool checkParams(std::map<std::string, std::string>& params,
+                   std::map<std::string, std::string>& result);
 };
 
 #endif // __SEARCH_HEADLER_H__

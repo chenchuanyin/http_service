@@ -1,5 +1,5 @@
 #ifndef __AUTHOR_HELPER_H__
-#define __AUHTOR_HELPER_H__
+#define __AUTHOR_HELPER_H__
 
 #include <map>
 
@@ -14,5 +14,5 @@ class AuthHelper {
                        const std::string& timestamp,
                        const std::string& appkey);
   void load_appkeys();
-}
+};
 #endif // __AUTHOR_HELPER_H__
