@@ -6,8 +6,9 @@
 #include <Poco/Net/HTTPServerResponse.h>
 
 class SuggestHandler : public Poco::Net::HTTPRequestHandler {
- public:
-  void handleRequest(Poco::Net::HTTPServerRequest &request,
-                     Poco::Net::HTTPServerResponse &response);
+public:
+    void handleRequest(Poco::Net::HTTPServerRequest &request,
+                       Poco::Net::HTTPServerResponse &response);
 };
+
 #endif // __SUGGEST_HANDLER_H__

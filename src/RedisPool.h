@@ -2,23 +2,30 @@
 #define __REDIS_POOL_H__
 
 #include <Poco/Redis/Client.h>
+#include <Poco/RefCountedObject.h>
+#include <map>
 
-class RedisPool {
+class RedisClient;
+
+
+class RedisPool : public Poco::RefCountedObject {
 public:
-    RedisPool(std::string host, int port, std::string db);
-
-    RedisPool(std::string host, int port);
+    RedisPool();
 
     ~RedisPool();
 
-    bool selectDB(std::string db);
+    bool addClient(const std::string &host, int port, const std::string &db);
+
+    bool addClient(const std::string &host, int port);
+
 
 private:
-    std::string host_;
-    int port_;
-    std::string db_;
-    bool isConnected_;
-    Poco::Redis::Client client_;
+    RedisPool(const RedisPool &);
+
+    RedisPool &operator=(const RedisPool &);
+
+private:
+    std::map<std::string, RedisClient *> pool_;
 };
 
 #endif //  __REDIS_POOL_H__

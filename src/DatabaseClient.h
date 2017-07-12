@@ -4,15 +4,18 @@
 #include <string>
 
 class DatabaseClient {
- public:
-  DatabaseClient(std::string host,
-                 int port,
-                 std::string user,
-                 std::string password,
-                 std::string db);
-  ~DatabaseClient();
+public:
+    DatabaseClient(std::string host,
+                   int port,
+                   std::string user,
+                   std::string password,
+                   std::string db);
 
-  bool insert();
-  bool select();
+    ~DatabaseClient();
+
+    bool insert();
+
+    bool select();
 };
+
 #endif // __DATABASE_CLIENT_H__

@@ -1,6 +1,7 @@
-build/*
-.idea/*
+.idea
 *.so
 *.dylib
 *.a
-*/.DS_Store
+.DS_Store
+build/
+cmake-build-debug/

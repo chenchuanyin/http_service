@@ -8,6 +8,7 @@
 #include "Log.h"
 #include "RequestHandlerFactory.h"
 
+#include <cstdlib>
 
 Application::Application(const std::string& configFile)
         : configFile_(configFile), httpServer_(NULL){
@@ -58,6 +59,12 @@ bool Application::initLog() {
 }
 
 bool Application::initService() {
+    initRedis();
+    initHttpServer();
+    return true;
+}
+
+bool Application::initHttpServer() {
     LOG_INFO << "start to init http server.\n";
     try {
         int port = Environment::Instance().getInt("http.port");
@@ -75,7 +82,33 @@ bool Application::initService() {
     }
 }
 
+bool Application::initRedis() {
+    redisPool_ = new RedisPool();
+    std::string redisCache = Environment::Instance().getString("redis.redis_cache");
+    addRedis(redisCache);
+    std::string kuyinHot = Environment::Instance().getString("redis.kuyin_hot");
+    addRedis(kuyinHot);
+    std::string redisSoa = Environment::Instance().getString("redis.redis_soa");
+    addRedis(redisSoa);
+    return true;
+}
+
+bool Application::addRedis(const std::string& redisAddress) {
+    Poco::StringTokenizer splitterTokenizer(redisAddress, ":");
+    if (splitterTokenizer.count() == 2) {
+        return redisPool_->addClient(splitterTokenizer[0], std::atoi(splitterTokenizer[1].c_str()));
+    }
+    else if (splitterTokenizer.count() == 3) {
+        return redisPool_->addClient(splitterTokenizer[0], std::atoi(splitterTokenizer[1].c_str()), splitterTokenizer[2]);
+    }
+    else {
+        LOG_ERROR << "error formmat,skip! content:" << redisAddress << "\n";
+        return false;
+    }
+}
+
 void Application::run() {
     httpServer_->start();
 }
+
 

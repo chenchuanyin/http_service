@@ -12,26 +12,25 @@
 
 class RequestHandlerFactory : public Poco::Net::HTTPRequestHandlerFactory {
 public:
-  virtual Poco::Net::HTTPRequestHandler *
+    virtual Poco::Net::HTTPRequestHandler *
     createRequestHandler(const Poco::Net::HTTPServerRequest &request) {
-    Poco::Logger::root().information("handleRequest, host:%s, method:%s, uri:%s",
-                                     request.getHost(),
-                                     request.getMethod(),
-                                     request.getURI());
-    if ("GET" == request.getMethod()) {
-      std::string path;
-      std::string query;
-      std::map<std::string, std::string> params;
-      Poco::StringTokenizer askTokenizer(request.getURI(), "?");
-      if (0 == Poco::icompare(askTokenizer[0], "/verticalSearch/api/json/searchsong")) {
-        return new SearchHandler;
-      }
-      else if (0 == Poco::icompare(askTokenizer[0], "/verticalSearch/api/json/suggest")) {
-        return new SuggestHandler;
-      }
+        Poco::Logger::root().information("handleRequest, host:%s, method:%s, uri:%s",
+                                         request.getHost(),
+                                         request.getMethod(),
+                                         request.getURI());
+        if ("GET" == request.getMethod()) {
+            std::string path;
+            std::string query;
+            std::map<std::string, std::string> params;
+            Poco::StringTokenizer askTokenizer(request.getURI(), "?");
+            if (0 == Poco::icompare(askTokenizer[0], "/verticalSearch/api/json/searchsong")) {
+                return new SearchHandler;
+            } else if (0 == Poco::icompare(askTokenizer[0], "/verticalSearch/api/json/suggest")) {
+                return new SuggestHandler;
+            }
+        }
+        return new DefaultHandler;
     }
-    return new DefaultHandler;
-  }
 };
 
 #endif // __REQUEST_HANDLER_FACTORY_H__
