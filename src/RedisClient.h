@@ -22,9 +22,15 @@ public:
 
     bool setex(const std::string &key, const std::string &value, int expire = 0);
 
+    bool set(const std::string &key, const std::string &value);
+
+    bool get(const std::string &key, std::string &value);
+
     bool sismember(const std::string &key, const std::string &member);
 
     bool rpush(const std::string &key, const std::string &value);
+
+    bool lrange(const std::string &key, const int offset, const int limit, Poco::Redis::Array &array);
 
     bool isConnected() const { return isConnected_; }
 
