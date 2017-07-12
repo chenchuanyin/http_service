@@ -10,7 +10,6 @@ endif()
 
 file(GLOB SOURCES "src/*.cc")
 
-set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-g -O2 -std=c++11 -Wall -lPocoFoundation -lPocoNet -lPocoUtil")
-#find_package(Poco REQUIRED)
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-g -O2 -std=c++11 -Wall -lPocoFoundation -lPocoNet -lPocoUtil -lPocoData -lPocoDataMySQL -lPocoRedis")
 
 add_executable(ms_proxy ${SOURCES})
