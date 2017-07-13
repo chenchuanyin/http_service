@@ -6,6 +6,7 @@
 #define __APPLICATION_H__
 
 #include "RedisPool.h"
+#include "EnginePool.h"
 
 #include <Poco/Net/HTTPServer.h>
 
@@ -23,6 +24,7 @@ private:
     bool initService();
     bool initHttpServer();
     bool initRedis();
+    bool initEngine();
     bool addRedis(const std::string& redisAddress);
     Application& operator=(const Application&);
     Application(const Application&);
@@ -31,6 +33,8 @@ private:
     std::string configFile_;
     Poco::Net::HTTPServer *httpServer_;
     Poco::AutoPtr<RedisPool> redisPool_;
+    Poco::AutoPtr<EnginePool> enginePool_;
+
 };
 
 

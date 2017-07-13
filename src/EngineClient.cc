@@ -4,14 +4,28 @@
 
 #include "EngineClient.h"
 
+#include "Log.h"
+
 #include <Poco/Format.h>
 
-EngineClient::EngineClient(std::string ip, int port) : ip_(ip), port_(port), status_(true) {
+EngineClient::EngineClient(std::string ip, int port) : ip_(ip), port_(port) {
     updateTime();
+    try {
+        Poco::Net::SocketAddress socketAddress(ip_, port_);
+        socket_.connect(socketAddress);
+        status_ = socket_.available();
+    }
+    catch (Poco::Exception &ex) {
+        LOG_ERROR << ex.displayText() <<"\n";
+    }
 }
 
 EngineClient::~EngineClient() {
-
+    LOG_DEBUG << "destruct\n";
+    if (socket_.available()) {
+        socket_.shutdown();
+        socket_.close();
+    }
 }
 
 bool EngineClient::timeLimit() {
@@ -29,6 +43,6 @@ void EngineClient::updateTime() {
 }
 
 std::string EngineClient::toString() const {
-    std::string str = Poco::format("engine client, ip:%s, port:%d, status:%s",
-                                   ip_, port_, status_ ? "true" : "false");
+    std::string str = Poco::format("%s:%d", ip_, port_);
+    return str;
 }

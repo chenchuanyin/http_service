@@ -19,8 +19,7 @@ RedisClient::RedisClient(std::string host, int port, std::string db)
                  << ":" << port_ << ":" << db_ << "]\n";
     }
     catch (Poco::Exception &ex) {
-        LOG_ERROR << "cannot connect to redis server[" << host_
-                  << ":" << port_ << ":" << db_ << "]\n";
+        LOG_ERROR << ex.displayText() << "\n";
     }
 }
 
@@ -34,8 +33,7 @@ RedisClient::RedisClient(std::string host, int port)
                  << ":" << port_ << "]\n";
     }
     catch (Poco::Exception &ex) {
-        LOG_ERROR << "cannot connect to redis server[" << host_
-                  << ":" << port_ << "]:" << ex.displayText() << "\n";
+        LOG_ERROR << ex.displayText() << "\n";
     }
 }
 
@@ -54,16 +52,16 @@ bool RedisClient::selectDB(std::string db) {
         return false;
     }
 
-    Poco::Redis::Array cmd;
-    cmd << "SELECT" << db;
-    std::string result = client_.execute<std::string>(cmd);
-    if (result.compare("OK") == 0) {
-        LOG_INFO << "redis execute success,command:" << cmd.toString() << "\n";
-        return true;
-    } else {
-        LOG_ERROR << "redis execute failed!command:" << cmd.toString() << "\n";
-        return false;
+    try {
+        Poco::Redis::Array cmd;
+        cmd << "SELECT" << db;
+        std::string result = client_.execute<std::string>(cmd);
+        return result.compare("OK") == 0 ? true : false;
     }
+    catch (Poco::Exception &ex) {
+        LOG_ERROR << ex.displayText() << std::endl;
+    }
+
 }
 
 bool RedisClient::sismember(const std::string &key, const std::string &member) {
@@ -72,9 +70,14 @@ bool RedisClient::sismember(const std::string &key, const std::string &member) {
         return false;
     }
 
-    Poco::Redis::Command command = Poco::Redis::Command::sismember(key, member);
-    std::string result = client_.execute<std::string>(command);
-    return result.compare("1") ? true : false;
+    try {
+        Poco::Redis::Command command = Poco::Redis::Command::sismember(key, member);
+        std::string result = client_.execute<std::string>(command);
+        return result.compare("1") ? true : false;
+    }
+    catch (Poco::Exception &ex) {
+        LOG_ERROR << ex.displayText() << std::endl;
+    }
 }
 
 bool RedisClient::setex(const std::string &key, const std::string &value, int expire) {
@@ -82,10 +85,16 @@ bool RedisClient::setex(const std::string &key, const std::string &value, int ex
         LOG_WARN << "redis not connencted, skip" << std::endl;
         return false;
     }
-    Poco::Timespan timespan(expire, 0);
-    Poco::Redis::Command command = Poco::Redis::Command::set(key, value, true, timespan);
-    std::string result = client_.execute<std::string>(command);
-    return result.compare("OK") == 0 ? true : false;
+
+    try {
+        Poco::Timespan timespan(expire, 0);
+        Poco::Redis::Command command = Poco::Redis::Command::set(key, value, true, timespan);
+        std::string result = client_.execute<std::string>(command);
+        return result.compare("OK") == 0 ? true : false;
+    }
+    catch (Poco::Exception &ex) {
+        LOG_ERROR << ex.displayText() << std::endl;
+    }
 }
 
 bool RedisClient::set(const std::string &key, const std::string &value) {
@@ -97,9 +106,17 @@ bool RedisClient::get(const std::string &key, std::string &value) {
         LOG_WARN << "redis not connencted, skip" << std::endl;
         return false;
     }
-    Poco::Redis::Command command = Poco::Redis::Command::get(key);
-    value = client_.execute<std::string>(command);
-    return true;
+
+    try {
+        Poco::Redis::Command command = Poco::Redis::Command::get(key);
+        Poco::Redis::BulkString result = client_.execute<Poco::Redis::BulkString>(command);
+        value = result.value();
+        LOG_DEBUG << result.value() << "\n";
+        return true;
+    }
+    catch (Poco::Exception &ex) {
+        LOG_ERROR << ex.displayText() << std::endl;
+    }
 }
 
 bool RedisClient::lrange(const std::string &key, const int offset, const int limit, Poco::Redis::Array &array) {
@@ -107,9 +124,15 @@ bool RedisClient::lrange(const std::string &key, const int offset, const int lim
         LOG_WARN << "redis not connencted, skip" << std::endl;
         return false;
     }
-    Poco::Redis::Command command = Poco::Redis::Command::lrange(key, offset, offset + limit - 1);
-    array = client_.execute<Poco::Redis::Array>(command);
-    return true;
+
+    try {
+        Poco::Redis::Command command = Poco::Redis::Command::lrange(key, offset, offset + limit - 1);
+        array = client_.execute<Poco::Redis::Array>(command);
+        return true;
+    }
+    catch (Poco::Exception &ex) {
+        LOG_ERROR << ex.displayText() << std::endl;
+    }
 }
 
 bool RedisClient::rpush(const std::string &key, const std::string &value) {
@@ -117,7 +140,13 @@ bool RedisClient::rpush(const std::string &key, const std::string &value) {
         LOG_WARN << "redis not connencted, skip" << std::endl;
         return false;
     }
-    Poco::Redis::Command command = Poco::Redis::Command::rpush(key, value);
-    client_.execute<std::string>(command);
-    return true;
+
+    try {
+        Poco::Redis::Command command = Poco::Redis::Command::rpush(key, value);
+        client_.execute<std::string>(command);
+        return true;
+    }
+    catch (Poco::Exception &ex) {
+        LOG_ERROR << ex.displayText() << std::endl;
+    }
 }

@@ -6,10 +6,11 @@
 #define __ENGINE_CLIENT_H__
 
 #include <Poco/Timestamp.h>
-
+#include <Poco/Net/Socket.h>
 #include <string>
+#include <Poco/Net/StreamSocket.h>
 
-class EngineClient {
+class EngineClient{
 public:
     EngineClient(std::string ip, int port);
 
@@ -23,6 +24,8 @@ public:
 
     void updateTime();
 
+    Poco::Net::StreamSocket &socket() { return socket_; }
+
     std::string toString() const;
 
 private:
@@ -30,7 +33,7 @@ private:
     int port_;
     bool status_;
     Poco::Timestamp timestamp_;
-
+    Poco::Net::StreamSocket socket_;
 };
 
 

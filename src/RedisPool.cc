@@ -23,7 +23,7 @@ bool RedisPool::addClient(const std::string &host, int port, const std::string &
         pool_.insert(std::pair<std::string, RedisClient *>(clientName, redisClientPtr));
         return true;
     } else {
-        LOG_ERROR << "redis[" << clientName << " not online\n";
+        LOG_ERROR << "redis[" << clientName << "] not online\n";
         return false;
     }
 }

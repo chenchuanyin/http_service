@@ -10,8 +10,8 @@
 
 #include <cstdlib>
 
-Application::Application(const std::string& configFile)
-        : configFile_(configFile), httpServer_(NULL){
+Application::Application(const std::string &configFile)
+        : configFile_(configFile), httpServer_(NULL) {
 }
 
 Application::~Application() {
@@ -60,6 +60,7 @@ bool Application::initLog() {
 
 bool Application::initService() {
     initRedis();
+    initEngine();
     initHttpServer();
     return true;
 }
@@ -77,7 +78,7 @@ bool Application::initHttpServer() {
         LOG_INFO << "init http server ok! port:" << port << "\n";
         return true;
     }
-    catch (Poco::Exception& ex) {
+    catch (Poco::Exception &ex) {
         LOG_ERROR << ex.displayText() << "\n";
     }
 }
@@ -93,22 +94,38 @@ bool Application::initRedis() {
     return true;
 }
 
-bool Application::addRedis(const std::string& redisAddress) {
+bool Application::addRedis(const std::string &redisAddress) {
     Poco::StringTokenizer splitterTokenizer(redisAddress, ":");
     if (splitterTokenizer.count() == 2) {
         return redisPool_->addClient(splitterTokenizer[0], std::atoi(splitterTokenizer[1].c_str()));
-    }
-    else if (splitterTokenizer.count() == 3) {
-        return redisPool_->addClient(splitterTokenizer[0], std::atoi(splitterTokenizer[1].c_str()), splitterTokenizer[2]);
-    }
-    else {
+    } else if (splitterTokenizer.count() == 3) {
+        return redisPool_->addClient(splitterTokenizer[0], std::atoi(splitterTokenizer[1].c_str()),
+                                     splitterTokenizer[2]);
+    } else {
         LOG_ERROR << "error formmat,skip! content:" << redisAddress << "\n";
         return false;
+    }
+}
+
+bool Application::initEngine() {
+    enginePool_ = new EnginePool();
+    std::string engineAddresses = Environment::Instance().getString("engine.address");
+    LOG_DEBUG << engineAddresses << "\n";
+    Poco::StringTokenizer countTokenizer(engineAddresses, ",");
+    for (int i = 0; i < countTokenizer.count(); ++i) {
+        Poco::StringTokenizer splitTokenizer(countTokenizer[i], ":");
+        if (splitTokenizer.count() == 2) {
+            enginePool_->addClient(splitTokenizer[0], std::atoi(splitTokenizer[1].c_str()));
+        }
+        else {
+            LOG_ERROR << "wrong format for engine address, content:" << countTokenizer[i] << "\n";
+        }
     }
 }
 
 void Application::run() {
     httpServer_->start();
 }
+
 
 

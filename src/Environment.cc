@@ -1,5 +1,7 @@
 #include "Environment.h"
 
+#include "Log.h"
+
 Environment::Environment() : isInitialized_(false) {
 }
 
@@ -16,13 +18,29 @@ bool Environment::initialize(std::string filename) {
 }
 
 std::string Environment::getString(const std::string &key) {
-    return configFile_->getString(key);
+    try {
+        return configFile_->getString(key);
+    }
+    catch (Poco::Exception &ex) {
+        LOG_ERROR << ex.displayText() << "\n";
+    }
 }
 
 int Environment::getInt(const std::string &key) {
-    return configFile_->getInt(key);
+    try {
+        return configFile_->getInt(key);
+    }
+    catch (Poco::Exception &ex) {
+        LOG_ERROR << ex.displayText() << "\n";
+    }
+
 }
 
 bool Environment::getBool(const std::string &key) {
-    return configFile_->getBool(key);
+    try {
+        return configFile_->getBool(key);
+    }
+    catch (Poco::Exception &ex) {
+        LOG_ERROR << ex.displayText() << "\n";
+    }
 }
