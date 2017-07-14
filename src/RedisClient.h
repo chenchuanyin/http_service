@@ -18,6 +18,12 @@ public:
 
     ~RedisClient();
 
+    std::string host() const { return host_; }
+
+    int port() const { return port_; }
+
+    std::string db() const { return db_; }
+
     bool selectDB(std::string db);
 
     bool setex(const std::string &key, const std::string &value, int expire = 0);
@@ -34,6 +40,16 @@ public:
 
     bool isConnected() const { return isConnected_; }
 
+    std::string toString() const;
+
+    bool operator==(const RedisClient &other);
+
+    bool operator!=(const RedisClient &other);
+
+    bool operator==(const std::string& other);
+
+    bool operator!=(const std::string& other);
+
 
 private:
     std::string host_;
@@ -47,5 +63,7 @@ private:
     RedisClient &operator=(const RedisClient &);
 };
 
+bool operator==(Poco::AutoPtr<RedisClient> lhs, const std::string &rhs);
+bool operator!=(Poco::AutoPtr<RedisClient> lhs, const std::string &rhs);
 
 #endif // __REDISCLIENT_H__

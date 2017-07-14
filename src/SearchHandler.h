@@ -13,6 +13,13 @@ public:
 
     bool checkParams(std::map<std::string, std::string> &params,
                      std::map<std::string, std::string> &result);
+
+    void convertParams(std::map<std::string, std::string> &params);
+
+    bool searchSong(std::map<std::string, std::string> &params,
+                    std::map<std::string, std::string> &result);
+
+    std::string getSearchRequestJson(std::map<std::string, std::string> &params);
 };
 
 #endif // __SEARCH_HEADLER_H__

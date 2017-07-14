@@ -2,6 +2,13 @@
 #define __UTIL_H__
 
 #include <map>
+#include <string>
 
-bool parseQuery(const std::string& query, std::map<std::string, std::string>& kv);
+namespace Util {
+    std::string getSources(const std::string &source);
+
+    void split(const std::string &query, const std::string &separator, std::vector<std::string> &array);
+
+    std::string getUUIDFromName(const std::string &uri);
+}
 #endif // __UTIL_H__

@@ -11,8 +11,10 @@
 
 RedisClient::RedisClient(std::string host, int port, std::string db)
         : host_(host), port_(port), db_(db), isConnected_(false) {
+    LOG_DEBUG << "construct， host:" << host_ << ",port:" << port_ << "\n";
     try {
-        client_.connect(host_, port_);
+        Poco::Timespan timespan(5, 0);
+        client_.connect(host_, port_, timespan);
         isConnected_ = true;
         selectDB(db);
         LOG_INFO << "connected to redis server[" << host_
@@ -25,6 +27,7 @@ RedisClient::RedisClient(std::string host, int port, std::string db)
 
 RedisClient::RedisClient(std::string host, int port)
         : host_(host), port_(port), isConnected_(false) {
+    LOG_DEBUG << "construct， host:" << host_ << ",port:" << port_ << "\n";
     try {
         client_.connect(host_, port_);
         isConnected_ = true;
@@ -38,6 +41,7 @@ RedisClient::RedisClient(std::string host, int port)
 }
 
 RedisClient::~RedisClient() {
+    LOG_DEBUG << "destruct, host:" << host_ << ",port:" << port_ << std::endl;
     if (isConnected_) {
         client_.disconnect();
         isConnected_ = false;
@@ -149,4 +153,32 @@ bool RedisClient::rpush(const std::string &key, const std::string &value) {
     catch (Poco::Exception &ex) {
         LOG_ERROR << ex.displayText() << std::endl;
     }
+}
+
+std::string RedisClient::toString() const {
+    return Poco::format("%s:%d:%s", host_, port_, db_);
+}
+
+bool RedisClient::operator==(const RedisClient &other) {
+    return this->host().compare(other.host()) && this->port() == other.port();
+}
+
+bool RedisClient::operator==(const std::string &other) {
+    return this->toString().compare(other);
+}
+
+bool RedisClient::operator!=(const RedisClient &other) {
+    return !(*this == other);
+}
+
+bool RedisClient::operator!=(const std::string &other) {
+    return !(*this == other);
+}
+
+bool operator==(Poco::AutoPtr<RedisClient> lhs, const std::string &rhs) {
+    return *lhs == rhs;
+}
+
+bool operator!=(Poco::AutoPtr<RedisClient> lhs, const std::string &rhs) {
+    return !(*lhs == rhs);
 }

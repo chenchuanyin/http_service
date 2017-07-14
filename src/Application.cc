@@ -109,16 +109,28 @@ bool Application::addRedis(const std::string &redisAddress) {
 
 bool Application::initEngine() {
     enginePool_ = new EnginePool();
-    std::string engineAddresses = Environment::Instance().getString("engine.address");
-    LOG_DEBUG << engineAddresses << "\n";
-    Poco::StringTokenizer countTokenizer(engineAddresses, ",");
-    for (int i = 0; i < countTokenizer.count(); ++i) {
-        Poco::StringTokenizer splitTokenizer(countTokenizer[i], ":");
+    std::string searchEngineAddresses = Environment::Instance().getString("engine.address");
+    LOG_INFO << "search engine:" << searchEngineAddresses << "\n";
+    Poco::StringTokenizer searchCountTokenizer(searchEngineAddresses, ",");
+    for (int i = 0; i < searchCountTokenizer.count(); ++i) {
+        Poco::StringTokenizer splitTokenizer(searchCountTokenizer[i], ":");
         if (splitTokenizer.count() == 2) {
-            enginePool_->addClient(splitTokenizer[0], std::atoi(splitTokenizer[1].c_str()));
+            enginePool_->addClient(splitTokenizer[0], std::atoi(splitTokenizer[1].c_str()), true);
         }
         else {
-            LOG_ERROR << "wrong format for engine address, content:" << countTokenizer[i] << "\n";
+            LOG_ERROR << "wrong format for engine address, content:" << searchCountTokenizer[i] << "\n";
+        }
+    }
+    std::string suggestEngineAddresses = Environment::Instance().getString("suggest.address");
+    LOG_INFO << "suggest engine:" << suggestEngineAddresses << "\n";
+    Poco::StringTokenizer suggestCountTokenizer(suggestEngineAddresses, ",");
+    for (int i = 0; i < suggestCountTokenizer.count(); ++i) {
+        Poco::StringTokenizer splitTokenizer(suggestCountTokenizer[i], ":");
+        if (splitTokenizer.count() == 2) {
+            enginePool_->addClient(splitTokenizer[0], std::atoi(splitTokenizer[1].c_str()), true);
+        }
+        else {
+            LOG_ERROR << "wrong format for engine address, content:" << suggestCountTokenizer[i] << "\n";
         }
     }
 }

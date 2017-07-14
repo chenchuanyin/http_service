@@ -3,7 +3,8 @@
 
 #include <Poco/Redis/Client.h>
 #include <Poco/RefCountedObject.h>
-#include <map>
+#include <Poco/Random.h>
+#include <vector>
 
 class RedisClient;
 
@@ -18,6 +19,8 @@ public:
 
     bool addClient(const std::string &host, int port);
 
+    Poco::AutoPtr<RedisClient> getClient(const std::string &host, const std::string &port);
+
 
 private:
     RedisPool(const RedisPool &);
@@ -25,7 +28,8 @@ private:
     RedisPool &operator=(const RedisPool &);
 
 private:
-    std::map<std::string, RedisClient *> pool_;
+    std::vector<Poco::AutoPtr<RedisClient>> pool_;
+    Poco::Random random_;
 };
 
 #endif //  __REDIS_POOL_H__

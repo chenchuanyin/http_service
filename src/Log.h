@@ -30,14 +30,14 @@ class Log {
 };
 
 #define LOG_DEBUG if (Log::Instance().getLogger().debug()) \
-    Poco::LogStream(Log::Instance().getLogger()).debug() << basename(__FILE__) << ":" << __func__ << "-" << __LINE__ << ":"
+    Poco::LogStream(Log::Instance().getLogger()).debug() << "[" << basename(__FILE__) << ":" << __func__ << "()-" << __LINE__ << "]:"
 #define LOG_INFO if (Log::Instance().getLogger().information()) \
-    Poco::LogStream(Log::Instance().getLogger()).information() << basename(__FILE__) << ":" << __func__ << "-" << __LINE__ << ":"
+    Poco::LogStream(Log::Instance().getLogger()).information() << "[" << basename(__FILE__) << ":" << __func__ << "()-" << __LINE__ << "]:"
 #define LOG_WARN if (Log::Instance().getLogger().warning()) \
-    Poco::LogStream(Log::Instance().getLogger()).warning() << basename(__FILE__) << ":" << __func__ << "-" << __LINE__ << ":"
+    Poco::LogStream(Log::Instance().getLogger()).warning() << "[" << basename(__FILE__) << ":" << __func__ << "()-" << __LINE__ << "]:"
 #define LOG_ERROR if (Log::Instance().getLogger().error()) \
-    Poco::LogStream(Log::Instance().getLogger()).error() << basename(__FILE__) << ":" << __func__ << "-" << __LINE__ << ":"
+    Poco::LogStream(Log::Instance().getLogger()).error() << "[" << basename(__FILE__) << ":" << __func__ << "()-" << __LINE__ << "]:"
 #define LOG_FATAL if (Log::Instance().getLogger().fatal()) \
-    Poco::LogStream(Log::Instance().getLogger()).fatal() << basename(__FILE__) << ":" << __func__ << "-" << __LINE__ << ":"
+    Poco::LogStream(Log::Instance().getLogger()).fatal() << "[" << basename(__FILE__) << ":" << __func__ << "()-" << __LINE__ << "]:"
 
 #endif // __LOG_H__

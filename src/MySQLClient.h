@@ -1,21 +1,25 @@
 #ifndef __DATABASE_CLIENT_H__
 #define __DATABASE_CLIENT_H__
 
-#include <string>
+#include <Poco/AutoPtr.h>
+#include <Poco/Data/SessionPool.h>
 
-class DatabaseClient {
+class MySQLClient : public Poco::RefCountedObject{
 public:
-    DatabaseClient(std::string host,
+    MySQLClient(std::string host,
                    int port,
                    std::string user,
                    std::string password,
                    std::string db);
 
-    ~DatabaseClient();
+    ~MySQLClient();
 
     bool insert();
 
     bool select();
+
+private:
+    Poco::AutoPtr<Poco::Data::SessionPool> sessionPool_;
 };
 
 #endif // __DATABASE_CLIENT_H__

@@ -7,10 +7,9 @@
 
 #include <Poco/Timestamp.h>
 #include <Poco/Net/Socket.h>
-#include <string>
 #include <Poco/Net/StreamSocket.h>
 
-class EngineClient{
+class EngineClient : public Poco::RefCountedObject {
 public:
     EngineClient(std::string ip, int port);
 
@@ -26,15 +25,30 @@ public:
 
     Poco::Net::StreamSocket &socket() { return socket_; }
 
+    std::string host() const { return host_; }
+
+    int port() const { return port_; }
+
     std::string toString() const;
 
+    bool operator==(const EngineClient& other);
+
+    bool operator==(const std::string& other);
+
+    bool operator!=(const EngineClient& other);
+
+    bool operator!=(const std::string& other);
+
 private:
-    std::string ip_;
+    std::string host_;
     int port_;
     bool status_;
     Poco::Timestamp timestamp_;
     Poco::Net::StreamSocket socket_;
 };
 
+bool operator==(Poco::AutoPtr<EngineClient> lhs, const std::string &rhs);
+
+bool operator!=(Poco::AutoPtr<EngineClient> lhs, const std::string &rhs);
 
 #endif // __ENGINE_CLIENT_H__
