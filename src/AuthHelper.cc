@@ -20,7 +20,7 @@ AuthHelper::~AuthHelper() {
 void AuthHelper::auth(const std::string &appid,
                       const std::string &timestamp,
                       const std::string &appkey,
-                      std::map<std::string, std::string> &result) {
+                      nlohmann::json &result) {
     try {
         if (needAuth_) {
             //Todo

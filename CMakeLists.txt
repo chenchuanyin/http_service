@@ -11,6 +11,7 @@ endif ()
 include_directories("third_party")
 file(GLOB SOURCES "src/*.cc")
 
-set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-g -O2 -std=c++11 -Wall -lPocoFoundation -lPocoNet -lPocoUtil -lPocoData -lPocoDataMySQL -lPocoRedis")
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-g -O2 -std=c++11 -Wall ")
 
 add_executable(ms_proxy ${SOURCES})
+target_link_libraries(ms_proxy -lPocoFoundation -lPocoNet -lPocoUtil -lPocoData -lPocoDataMySQL -lPocoRedis)

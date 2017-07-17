@@ -3,7 +3,7 @@
 
 #include "MySQLClient.h"
 
-#include <map>
+#include <nlohmann/json.hpp>
 
 class AuthHelper {
 public:
@@ -14,7 +14,7 @@ public:
     void auth(const std::string &appid,
               const std::string &timestamp,
               const std::string &appkey,
-              std::map<std::string, std::string> &result);
+              nlohmann::json &result);
 
 private:
     std::string getToken(const std::string &appid, const std::string &timestamp, const std::string &appkey);

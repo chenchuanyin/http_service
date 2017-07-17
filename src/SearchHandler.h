@@ -1,6 +1,7 @@
 #ifndef __SEARCH_HEADLER_H__
 #define __SEARCH_HEADLER_H__
 
+#include <nlohmann/json.hpp>
 #include <Poco/Net/HTTPRequestHandler.h>
 #include <Poco/Net/HTTPServerRequest.h>
 #include <Poco/Net/HTTPServerResponse.h>
@@ -11,15 +12,13 @@ public:
     void handleRequest(Poco::Net::HTTPServerRequest &request,
                        Poco::Net::HTTPServerResponse &response);
 
-    bool checkParams(std::map<std::string, std::string> &params,
-                     std::map<std::string, std::string> &result);
+    bool checkParam(nlohmann::json &param, nlohmann::json &result);
 
-    void convertParams(std::map<std::string, std::string> &params);
+    void convertParam(nlohmann::json &param);
 
-    bool searchSong(std::map<std::string, std::string> &params,
-                    std::map<std::string, std::string> &result);
+    bool searchSong(nlohmann::json &param, nlohmann::json &result);
 
-    std::string getSearchRequestJson(std::map<std::string, std::string> &params);
+    std::string getSearchRequestJson(const nlohmann::json &param);
 };
 
 #endif // __SEARCH_HEADLER_H__
