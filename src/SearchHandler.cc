@@ -8,7 +8,6 @@
 #include <nlohmann/json.hpp>
 #include <Poco/StringTokenizer.h>
 #include <Poco/URI.h>
-#include <algorithm>
 
 void SearchHandler::handleRequest(Poco::Net::HTTPServerRequest &request,
                                   Poco::Net::HTTPServerResponse &response) {
@@ -49,14 +48,6 @@ void SearchHandler::handleRequest(Poco::Net::HTTPServerRequest &request,
 
 
 bool SearchHandler::checkParam(nlohmann::json &param, nlohmann::json &result) {
-    std::string apiVecStr = Environment::Instance().getString("http.api_list");
-    std::vector<std::string> apiVec;
-    Util::split(apiVecStr, ",", apiVec);
-    if (std::find(apiVec.begin(), apiVec.end(), param["path"]) == apiVec.end()) {
-        result["rc"] = 2;
-        result["error"] = "请求的服务不存在";
-        return false;
-    }
     if (param["appId"].empty()) {
         result["rc"] = 1;
         result["error"] = "appId不能为空";

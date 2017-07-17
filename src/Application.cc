@@ -7,8 +7,7 @@
 #include "Environment.h"
 #include "Log.h"
 #include "RequestHandlerFactory.h"
-
-#include <cstdlib>
+#include <Poco/StringTokenizer.h>
 
 Application::Application(const std::string &configFile)
         : configFile_(configFile), httpServer_(NULL) {
@@ -22,7 +21,7 @@ Application::~Application() {
     }
 }
 
-bool Application::initialize() {
+bool Application::init() {
     if (initConfig()) {
         fprintf(stdout, "init config completed\n");
     } else {
@@ -44,7 +43,7 @@ bool Application::initialize() {
     return true;
 }
 
-bool Application::unInitialize() {
+bool Application::unInit() {
     return true;
 }
 

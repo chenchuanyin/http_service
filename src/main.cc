@@ -4,7 +4,7 @@
 
 int main(void) {
     Application application("default.conf");
-    if (application.initialize()) {
+    if (application.init()) {
         application.run();
         LOG_INFO << "服务开启\n";
     }

@@ -6,9 +6,15 @@
 #include <Poco/Net/HTTPServerResponse.h>
 
 class DefaultHandler : public Poco::Net::HTTPRequestHandler {
- public:
-  void handleRequest(Poco::Net::HTTPServerRequest &request,
-                     Poco::Net::HTTPServerResponse &response);
+public:
+    DefaultHandler(const int errorCode, const std::string &errorContent);
+
+    void handleRequest(Poco::Net::HTTPServerRequest &request,
+                       Poco::Net::HTTPServerResponse &response);
+
+private:
+    int errorCode_;
+    std::string errorContent_;
 };
 
 #endif // __DEAULT_HEADLER_H__

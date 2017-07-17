@@ -12,22 +12,39 @@
 
 class Application {
 public:
-    Application(const std::string& configFile);
+    Application &Intance() {
+        static Application app;
+        return app;
+    }
+
+    Application(const std::string &configFile = "default.conf");
+
     ~Application();
-    bool initialize();
+
+    bool init();
+
     void run();
-    bool unInitialize();
+
+    bool unInit();
 
 private:
     bool initConfig();
+
     bool initLog();
+
     bool initService();
+
     bool initHttpServer();
+
     bool initRedis();
+
     bool initEngine();
-    bool addRedis(const std::string& redisAddress);
-    Application& operator=(const Application&);
-    Application(const Application&);
+
+    bool addRedis(const std::string &redisAddress);
+
+    Application &operator=(const Application &);
+
+    Application(const Application &);
 
 private:
     std::string configFile_;
