@@ -6,7 +6,7 @@
 
 #include "Environment.h"
 #include "Log.h"
-#include "RequestHandlerFactory.h"
+#include "HttpRequestHandlerFactory.h"
 #include <Poco/StringTokenizer.h>
 
 Application::Application(const std::string &configFile)
@@ -73,7 +73,7 @@ bool Application::initHttpServer() {
         params->setMaxQueued(100);
         params->setMaxThreads(threads);
         Poco::Net::ServerSocket svs(port);
-        httpServer_ = new Poco::Net::HTTPServer(new RequestHandlerFactory(), svs, params);
+        httpServer_ = new Poco::Net::HTTPServer(new HttpRequestHandlerFactory(enginePool_, redisPool_), svs, params);
         LOG_INFO << "init http server ok! port:" << port << "\n";
         return true;
     }
@@ -126,7 +126,7 @@ bool Application::initEngine() {
     for (int i = 0; i < suggestCountTokenizer.count(); ++i) {
         Poco::StringTokenizer splitTokenizer(suggestCountTokenizer[i], ":");
         if (splitTokenizer.count() == 2) {
-            enginePool_->addClient(splitTokenizer[0], std::atoi(splitTokenizer[1].c_str()), true);
+            enginePool_->addClient(splitTokenizer[0], std::atoi(splitTokenizer[1].c_str()), false);
         }
         else {
             LOG_ERROR << "wrong format for engine address, content:" << suggestCountTokenizer[i] << "\n";

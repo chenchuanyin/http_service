@@ -31,16 +31,16 @@ private:
 
     std::string genSuggestRequestData(const std::string &request);
 
-
     Poco::Timestamp::TimeVal getCurrentTime();
 
-    Poco::UInt32 getReplyDataSectionSize(EngineClient *client, bool isSearchRequest);
+    Poco::UInt32 getReplyDataSectionSize(Poco::AutoPtr<EngineClient> client, bool isSearchRequest);
 
 private:
     std::vector<Poco::AutoPtr<EngineClient>> searchPool_;
     std::vector<Poco::AutoPtr<EngineClient> > suggestPool_;
     Poco::Timestamp timestamp_;
     Poco::Random random_;
+    Poco::Mutex mutex_;
 };
 
 

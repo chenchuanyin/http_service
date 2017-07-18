@@ -160,7 +160,8 @@ std::string RedisClient::toString() const {
 }
 
 bool RedisClient::operator==(const RedisClient &other) {
-    return this->host().compare(other.host()) && this->port() == other.port();
+    return this->host().compare(other.host()) == 0 && this->port() == other.port()
+           && this->db().compare(other.db()) == 0;
 }
 
 bool RedisClient::operator==(const std::string &other) {

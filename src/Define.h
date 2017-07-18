@@ -8,6 +8,8 @@
 #include <vector>
 #include <string>
 
+const int MICROSECONDS_PER_SECOND  = 1000000;
+
 extern std::vector<int> definedSources;
 extern std::vector<int> definedCategorys;
 extern std::vector<std::string> definedCategoryTypes;
@@ -19,7 +21,9 @@ extern std::vector<int> definedSemantics;
 
 enum DefinedErrorCodeType {
     SUCCESS = 0,
-    NO_SUPPORT_METHOD = 2,
+    ERROR_PARAM = 1,
+    ERROR_SERVICE = 2,
+    UNAVAILABLE_ENGINE = 4,
     UNKNOWN_METHOD = 5,
     UNKNOWN_ERROR = 6
 };

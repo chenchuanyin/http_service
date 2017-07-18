@@ -26,7 +26,7 @@ void AuthHelper::auth(const std::string &appid,
             //Todo
             return;
         } else {
-            result["rc"] = "0";
+            result["rc"] = 0;
             result["error"] = "";
             return;
         }

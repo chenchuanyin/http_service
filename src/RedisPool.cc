@@ -28,29 +28,48 @@ bool RedisPool::addClient(const std::string &host, int port, const std::string &
 }
 
 bool RedisPool::addClient(const std::string &host, int port) {
-    Poco::AutoPtr<RedisClient> redisClientPtr = new RedisClient(host, port);
-    std::string clientName = Poco::format("%s:%d", host, port);
-    if (redisClientPtr->isConnected()) {
-        LOG_INFO << "redis pool add new client:" << clientName << "\n";
-        pool_.push_back(redisClientPtr);
-        return true;
-    } else {
-        LOG_ERROR << "redis[" << clientName << "] not online\n";
-        return false;
-    }
+    addClient(host, port, "0");
 }
 
-Poco::AutoPtr<RedisClient> RedisPool::getClient(const std::string &host, const std::string &port) {
-    LOG_INFO << "host:"<< host << ", port:" << port << "\n";
-    std::string key = Poco::format("%s:%s", host, port);
+Poco::AutoPtr<RedisClient> RedisPool::getClient(const std::string &host, const int port, const std::string &db) {
+    LOG_INFO << "host:" << host << ", port:" << port << ", db:" << db << "\n";
+    std::string key = Poco::format("%s:%d:%s", host, port, db);
+    return getClient(key);
+}
+
+Poco::AutoPtr<RedisClient> RedisPool::getClient(const std::string &key) {
     auto it = std::find(pool_.begin(), pool_.end(), key);
     if (it != pool_.end()) {
         return *it;
     } else {
         if (pool_.size() > 0)
-            return pool_[random_.next()%pool_.size()];
+            return pool_[random_.next() % pool_.size()];
         else
             return NULL;
+    }
+}
+
+Poco::AutoPtr<RedisClient> RedisPool::getClient(const std::string &host, const int port) {
+    LOG_INFO << "host:" << host << ", port:" << port << "\n";
+    std::string key = Poco::format("%s:%s:0", host, port);
+    return getClient(key);
+}
+
+
+nlohmann::json RedisPool::getCache(const std::string &key, const std::string &route) {
+    std::string value;
+    Poco::AutoPtr<RedisClient> client = getClient(route);
+    if (client) {
+        client->get(key, value);
+    }
+
+    return value;
+}
+
+void RedisPool::setex(const std::string &route, const std::string &key, const std::string &value, int expire) {
+    Poco::AutoPtr<RedisClient> client = getClient(route);
+    if (client) {
+        client->setex(key, value, expire);
     }
 }
 

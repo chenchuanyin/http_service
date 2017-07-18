@@ -4,10 +4,12 @@
 
 #include "EnginePool.h"
 
+#include "Define.h"
 #include "Log.h"
-#include "EngineClient.h"
+#include "Util.h"
 
 #include <Poco/ByteOrder.h>
+#include <fstream>
 
 EnginePool::EnginePool() {
     LOG_DEBUG << "construct\n";
@@ -54,6 +56,7 @@ bool EnginePool::delClient(const std::string &ip, const int port, bool isSearch)
 }
 
 Poco::AutoPtr<EngineClient> EnginePool::getClient(const std::string &address, bool isSearch) {
+    LOG_DEBUG << "address:" << address << ",isSearch:" << isSearch << "\n";
     if (isSearch) {
         auto it = std::find(searchPool_.begin(), searchPool_.end(), address);
         if (it != searchPool_.end()) {
@@ -84,79 +87,125 @@ Poco::Timestamp::TimeVal EnginePool::getCurrentTime() {
 
 std::string EnginePool::genSearchRequestData(const std::string &request) {
     std::string mod("MOD_GAS");
-    Poco::UInt32 preLen = Poco::ByteOrder::toLittleEndian(mod.size() + 4 + request.size() + 4);
-    Poco::UInt32 modLen = Poco::ByteOrder::toLittleEndian(mod.size());
-    Poco::UInt32 requestLen = Poco::ByteOrder::toLittleEndian(request.size());
-    std::string requestData = Poco::format("SERVER0001%ul%ul%s%ul%s", preLen, modLen, mod, requestLen, request);
-    return requestData;
+    Poco::UInt8 preLenBytes[4];
+    Poco::UInt32 preLen = Poco::ByteOrder::toBigEndian((Poco::UInt32) (mod.size() + 4 + request.size() + 4));
+    Util::int2Bytes(preLen, preLenBytes);
+    std::string preLenStr((char *) preLenBytes, 4);
+    Poco::UInt8 modLenBytes[4];
+    Poco::UInt32 modLen = Poco::ByteOrder::toBigEndian((Poco::UInt32) mod.size());
+    Util::int2Bytes(modLen, modLenBytes);
+    std::string modLenStr((char *) modLenBytes, 4);
+    Poco::UInt8 requestLenBytes[4];
+    Poco::UInt32 requestLen = Poco::ByteOrder::toBigEndian((Poco::UInt32) request.size());
+    Util::int2Bytes(requestLen, requestLenBytes);
+    std::string requestLenStr((char *) requestLenBytes, 4);
+
+    std::stringstream requestDataStream;
+    requestDataStream << "SERVER0001" << preLenStr << modLenStr << mod << requestLenStr << request;
+    LOG_DEBUG << requestDataStream.str() << "\n";
+    std::ofstream tmpFile;
+    tmpFile.open("test.dat", std::ios::binary);
+    if (tmpFile.is_open())
+        tmpFile.write(requestDataStream.str().c_str(), requestDataStream.str().size());
+    else LOG_WARN << "file cannot open\n";
+    tmpFile.close();
+    return requestDataStream.str();
 }
 
 std::string EnginePool::genSuggestRequestData(const std::string &request) {
     std::string mod("");
-    Poco::UInt32 preLen = Poco::ByteOrder::toLittleEndian(mod.size() + 4 + request.size() + 4);
-    Poco::UInt32 modLen = Poco::ByteOrder::toLittleEndian(mod.size());
-    Poco::UInt32 requestLen = Poco::ByteOrder::toLittleEndian(request.size());
-    std::string requestData = Poco::format("ASSOSVR100%ul%ul%s%ul%s", preLen, modLen, mod, requestLen, request);
-    return requestData;
+    Poco::UInt8 preLenBytes[4];
+    Poco::UInt32 preLen = Poco::ByteOrder::toBigEndian((Poco::UInt32) (mod.size() + 4 + request.size() + 4));
+    Util::int2Bytes(preLen, preLenBytes);
+    std::string preLenStr((char *) preLenBytes, 4);
+    Poco::UInt8 modLenBytes[4];
+    Poco::UInt32 modLen = Poco::ByteOrder::toBigEndian((Poco::UInt32) mod.size());
+    Util::int2Bytes(modLen, modLenBytes);
+    std::string modLenStr((char *) modLenBytes, 4);
+    Poco::UInt8 requestLenBytes[4];
+    Poco::UInt32 requestLen = Poco::ByteOrder::toBigEndian((Poco::UInt32) request.size());
+    Util::int2Bytes(requestLen, requestLenBytes);
+    std::string requestLenStr((char *) requestLenBytes, 4);
+
+    std::stringstream requestDataStream;
+    requestDataStream << "ASSOSVR100" << preLenStr << modLenStr << mod << requestLenStr << request;
+    LOG_DEBUG << requestDataStream.str() << "\n";
+    std::ofstream tmpFile;
+    tmpFile.open("test.dat", std::ios::binary);
+    if (tmpFile.is_open())
+        tmpFile.write(requestDataStream.str().c_str(), requestDataStream.str().size());
+    else LOG_WARN << "file cannot open\n";
+    tmpFile.close();
+    return requestDataStream.str();
 }
 
 
 EngineRequestReply EnginePool::handleRequest(const std::string &param, const std::string &route, bool isSearchRequest) {
+    LOG_DEBUG << "param:" << param << ",route:" << route << ",isSearchRequest:" << isSearchRequest << "\n";
+    Poco::ScopedLock<Poco::Mutex> scopedLock(mutex_);
     EngineRequestReply requestReply;
-    Poco::Timestamp::TimeVal startTime = getCurrentTime();
-    EngineClient *client = getClient(route, isSearchRequest);
-    if (NULL == client) {
-        LOG_ERROR << "cannot find engine(" << route << ") from engine pool\n";
-        requestReply.errors["code"] = "ENGINE_EXCEPTION";
-        requestReply.errors["message"] = u8"内部服务异常";
-        return requestReply;
-    }
-    requestReply.statistics["initTime"] = (getCurrentTime() - startTime) / 1000000;
-    if (!client) {
-        requestReply.errors["code"] = "UNKNOWN_EXCEPTION";
-        requestReply.errors["message"] = u8"内部服务异常";
-        return requestReply;
-    }
-    std::string request = isSearchRequest ? genSearchRequestData(param) : genSuggestRequestData(param);
-    startTime = getCurrentTime();
-    client->socket().sendBytes(request.c_str(), request.size());
-    requestReply.statistics["sendTime"] = (getCurrentTime() - startTime) / 1000000;
-    startTime = getCurrentTime();
-    Poco::UInt32 replyDataSectionSize = getReplyDataSectionSize(client, isSearchRequest);
-    char replyDataSection[replyDataSectionSize];
     try {
-        if (replyDataSectionSize != client->socket().receiveBytes(replyDataSection, replyDataSectionSize)) {
-            LOG_ERROR << "network exception, get data section failed, size:" << replyDataSectionSize << "\n";
-            requestReply.errors["code"] = "NETWORK_EXCEPTION";
-            requestReply.errors["message"] = u8"内部服务异常";
+        Poco::Timestamp::TimeVal startTime = getCurrentTime();
+        Poco::AutoPtr<EngineClient> client = getClient(route, isSearchRequest);
+        if (NULL == client) {
+            LOG_ERROR << "cannot find engine(" << route << ") from engine pool\n";
+            requestReply.error["rc"] = UNAVAILABLE_ENGINE;
+            requestReply.error["error"] = "内部服务异常";
             return requestReply;
         }
-        requestReply.engineReply.append(replyDataSection, replyDataSectionSize);
-        requestReply.statistics["recvTime"] = (getCurrentTime() - startTime) / 1000000;
+//        if (!client->socket()) {
+//            LOG_WARN << "client not available, reconnect\n";
+//            client->socket().close();
+//            Poco::Net::SocketAddress socketAddress(client->host(), client->port());
+//            client->socket().connect(socketAddress);
+//        }
+        requestReply.statistics["initTime"] = (getCurrentTime() - startTime) / MICROSECONDS_PER_SECOND;
+        std::string request = isSearchRequest ? genSearchRequestData(param) : genSuggestRequestData(param);
+        startTime = getCurrentTime();
+        client->socket().sendBytes(request.c_str(), request.size());
+        requestReply.statistics["sendTime"] = (getCurrentTime() - startTime) / MICROSECONDS_PER_SECOND;
+        startTime = getCurrentTime();
+        Poco::UInt32 replyDataSectionSize = getReplyDataSectionSize(client, isSearchRequest);
+
+        char replyDataSection[replyDataSectionSize];
+
+        int recvLength = 0;
+        int allRecvLength = 0;
+        int remainLength = replyDataSectionSize - allRecvLength;
+        while ((recvLength = client->socket().receiveBytes(replyDataSection + allRecvLength,
+                                                           sizeof(replyDataSection + allRecvLength))) !=
+               remainLength) {
+            allRecvLength += recvLength;
+            remainLength = replyDataSectionSize - allRecvLength;
+        }
+        std::string replyData(replyDataSection, replyDataSectionSize);
+        LOG_DEBUG << "reply data:" << replyData << std::endl;
+        requestReply.engineReply = nlohmann::json::parse(replyData);
+        LOG_DEBUG << "reply json:" << requestReply.engineReply << std::endl;
+        requestReply.statistics["recvTime"] = (getCurrentTime() - startTime) / MICROSECONDS_PER_SECOND;
+        requestReply.error["rc"] = SUCCESS;
         return requestReply;
     }
     catch (Poco::Exception &ex) {
         LOG_ERROR << ex.displayText() << "\n";
+        requestReply.error["rc"] = UNAVAILABLE_ENGINE;
+        requestReply.error["error"] = ex.displayText();
+        return requestReply;
     }
-
 }
 
-Poco::UInt32 EnginePool::getReplyDataSectionSize(EngineClient *client, bool /*isSearchRequest*/) {
-    try {
-        char headSeg[10];
-        if (10 != client->socket().receiveBytes(headSeg, 10)) {
-            LOG_ERROR << "network exception, get 10 bytes head segment failed\n";
-            return 0;
-        }
-        Poco::UInt32 sizeSeg;
-        if (4 != client->socket().receiveBytes((void *) &sizeSeg, 4)) {
-            LOG_ERROR << "network exception, get 4 bytes data section size segment failed\n";
-            return 0;
-        }
-        return Poco::ByteOrder::fromNetwork(sizeSeg);
+Poco::UInt32 EnginePool::getReplyDataSectionSize(Poco::AutoPtr<EngineClient> client, bool /*isSearchRequest*/) {
+    char headSeg[10];
+    int length = 0;
+    if (10 != (length = client->socket().receiveBytes(headSeg, 10))) {
+        LOG_ERROR << "network exception, get 10 bytes head segment failed(length:" << length << ")\n";
+        return 0;
     }
-    catch (Poco::Exception &ex) {
-        LOG_ERROR << ex.displayText() << "\n";
+    Poco::UInt32 sizeSeg;
+    if (4 != (length = client->socket().receiveBytes((void *) &sizeSeg, 4))) {
+        LOG_ERROR << "network exception, get 4 bytes data section size segment failed(length:" << length << ")\n";
+        return 0;
     }
+    return Poco::ByteOrder::fromNetwork(sizeSeg);
 }
 
