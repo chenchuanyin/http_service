@@ -15,7 +15,7 @@ SearchSongService::SearchSongService(nlohmann::json &param, Poco::AutoPtr<Engine
 
 }
 
-std::string SearchSongService::genSearchRequest(const nlohmann::json &param) {
+std::string SearchSongService::genRequestParam(const nlohmann::json &param) {
     LOG_DEBUG << "param:" << param.dump() << "\n";
     nlohmann::json json;
     json["pagestart"] = param["pageIndex"];
@@ -29,7 +29,8 @@ std::string SearchSongService::genSearchRequest(const nlohmann::json &param) {
     json["kyfilter"] = param["isCopyright"];
     json["kyonlyvip"] = param["isVip"];
     json["copyright"] = param["copyrightType"];
-    json["iskeepalive"] = 1;
+    json["iskeepalive"] = Environment::Instance().getInt("suggest.iskeepalive");
+
     LOG_INFO << "request param: " << json << std::endl;
     return json.dump();
 }
@@ -51,7 +52,7 @@ EngineRequestReply SearchSongService::operator()() {
     param_["categoryType"] = categoryType;
     Util::checkKeyValueForParam(param_, "route", "");
     std::string route; // = param_["route"];
-    std::string paramStr = genSearchRequest(param_);
+    std::string paramStr = genRequestParam(param_);
 
     EngineRequestReply reply = enginePool_->handleRequest(paramStr, route, true);
     return reply;

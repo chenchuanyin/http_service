@@ -9,14 +9,10 @@
 #include "EnginePool.h"
 
 #include <Poco/Net/HTTPServer.h>
+#include <Poco/Net/SocketReactor.h>
 
 class Application {
 public:
-    Application &Intance() {
-        static Application app;
-        return app;
-    }
-
     Application(const std::string &configFile = "default.conf");
 
     ~Application();

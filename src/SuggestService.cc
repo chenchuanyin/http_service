@@ -12,10 +12,18 @@ SuggestService::SuggestService(nlohmann::json &param, Poco::AutoPtr<EnginePool> 
 EngineRequestReply SuggestService::operator()() {
     LOG_DEBUG << "param:" << param_ << "\n";
     std::string route;
-    nlohmann::json param;
-    param["text"] = param_["text"];
     Util::checkKeyValueForParam(param_, "route", "");
     route = param_["route"];
-    EngineRequestReply reply = enginePool_->handleRequest(param.dump(), route, false);
+    std::string paramStr = genRequestParam(param_);
+    EngineRequestReply reply = enginePool_->handleRequest(paramStr, route, false);
     return reply;
+}
+
+std::string SuggestService::genRequestParam(const nlohmann::json &param) {
+    nlohmann::json json;
+    json["text"] = param_["text"];
+    json["iskeepalive"] = Environment::Instance().getInt("suggest.iskeepalive");
+
+    LOG_INFO << "param:" << json << "\n";
+    return json.dump();
 }

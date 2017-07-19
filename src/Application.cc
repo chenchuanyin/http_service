@@ -69,8 +69,9 @@ bool Application::initHttpServer() {
     try {
         int port = Environment::Instance().getInt("http.port");
         int threads = Environment::Instance().getInt("http.threads");
+        int maxQueue = Environment::Instance().getInt("http.max_connection_limit");
         Poco::Net::HTTPServerParams *params = new Poco::Net::HTTPServerParams;
-        params->setMaxQueued(100);
+        params->setMaxQueued(maxQueue);
         params->setMaxThreads(threads);
         Poco::Net::ServerSocket svs(port);
         httpServer_ = new Poco::Net::HTTPServer(new HttpRequestHandlerFactory(enginePool_, redisPool_), svs, params);

@@ -16,6 +16,8 @@ public:
     EngineRequestReply operator()();
 
 private:
+    std::string genRequestParam(const nlohmann::json &param);
+private:
     nlohmann::json param_;
     Poco::AutoPtr<EnginePool> enginePool_;
     Poco::AutoPtr<RedisPool> redisPool_;

@@ -25,6 +25,10 @@ public:
 
     Poco::Net::StreamSocket &socket() { return socket_; }
 
+    void reconnect(const std::string &host, const int port);
+
+    void reconnect();
+
     std::string host() const { return host_; }
 
     int port() const { return port_; }

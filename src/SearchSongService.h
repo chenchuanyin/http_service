@@ -18,7 +18,7 @@ public:
     EngineRequestReply operator()();
 
 private:
-    std::string genSearchRequest(const nlohmann::json &param);
+    std::string genRequestParam(const nlohmann::json &param);
 
 private:
     nlohmann::json &param_;

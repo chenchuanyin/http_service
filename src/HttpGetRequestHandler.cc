@@ -23,6 +23,7 @@ void HttpGetRequestHandler::handleRequest(Poco::Net::HTTPServerRequest &request,
              << ", method:" << request.getMethod()
              << ", uri:" << request.getURI() << "\n";
     response.setContentType("application/json");
+    response.setKeepAlive(false);
     try {
         Poco::URI uri(request.getURI());
         LOG_INFO << "path: " << uri.getPath()

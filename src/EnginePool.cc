@@ -144,31 +144,29 @@ EngineRequestReply EnginePool::handleRequest(const std::string &param, const std
     LOG_DEBUG << "param:" << param << ",route:" << route << ",isSearchRequest:" << isSearchRequest << "\n";
     Poco::ScopedLock<Poco::Mutex> scopedLock(mutex_);
     EngineRequestReply requestReply;
+    Poco::AutoPtr<EngineClient> client = getClient(route, isSearchRequest);
     try {
         Poco::Timestamp::TimeVal startTime = getCurrentTime();
-        Poco::AutoPtr<EngineClient> client = getClient(route, isSearchRequest);
         if (NULL == client) {
             LOG_ERROR << "cannot find engine(" << route << ") from engine pool\n";
             requestReply.error["rc"] = UNAVAILABLE_ENGINE;
             requestReply.error["error"] = "内部服务异常";
             return requestReply;
         }
-//        if (!client->socket()) {
-//            LOG_WARN << "client not available, reconnect\n";
-//            client->socket().close();
-//            Poco::Net::SocketAddress socketAddress(client->host(), client->port());
-//            client->socket().connect(socketAddress);
-//        }
         requestReply.statistics["initTime"] = (getCurrentTime() - startTime) / MICROSECONDS_PER_SECOND;
         std::string request = isSearchRequest ? genSearchRequestData(param) : genSuggestRequestData(param);
         startTime = getCurrentTime();
+
         client->socket().sendBytes(request.c_str(), request.size());
         requestReply.statistics["sendTime"] = (getCurrentTime() - startTime) / MICROSECONDS_PER_SECOND;
         startTime = getCurrentTime();
         Poco::UInt32 replyDataSectionSize = getReplyDataSectionSize(client, isSearchRequest);
+        if (0 == replyDataSectionSize) {
+            client->reconnect();
+            return handleRequest(param, route, isSearchRequest);
+        }
 
         char replyDataSection[replyDataSectionSize];
-
         int recvLength = 0;
         int allRecvLength = 0;
         int remainLength = replyDataSectionSize - allRecvLength;

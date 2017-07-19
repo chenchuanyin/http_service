@@ -65,6 +65,16 @@ bool EngineClient::operator!=(const std::string &other) {
     return !(*this == other);
 }
 
+void EngineClient::reconnect(const std::string &host, const int port) {
+    socket_.close();
+    Poco::Net::SocketAddress socketAddress(host, port);
+    socket_.connect(socketAddress);
+}
+
+void EngineClient::reconnect() {
+    reconnect(host_, port_);
+}
+
 bool operator==(Poco::AutoPtr<EngineClient> lhs, const std::string &rhs) {
     return *lhs == rhs;
 }
