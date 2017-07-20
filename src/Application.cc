@@ -58,8 +58,8 @@ bool Application::initLog() {
 }
 
 bool Application::initService() {
-    initRedis();
-    initEngine();
+    initRedisPool();
+    initEnginePool();
     initHttpServer();
     return true;
 }
@@ -83,7 +83,7 @@ bool Application::initHttpServer() {
     }
 }
 
-bool Application::initRedis() {
+bool Application::initRedisPool() {
     redisPool_ = new RedisPool();
     std::string redisCache = Environment::Instance().getString("redis.redis_cache");
     addRedis(redisCache);
@@ -107,7 +107,7 @@ bool Application::addRedis(const std::string &redisAddress) {
     }
 }
 
-bool Application::initEngine() {
+bool Application::initEnginePool() {
     enginePool_ = new EnginePool();
     std::string searchEngineAddresses = Environment::Instance().getString("engine.address");
     LOG_INFO << "search engine:" << searchEngineAddresses << "\n";

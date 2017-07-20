@@ -32,9 +32,9 @@ private:
 
     bool initHttpServer();
 
-    bool initRedis();
+    bool initRedisPool();
 
-    bool initEngine();
+    bool initEnginePool();
 
     bool addRedis(const std::string &redisAddress);
 
