@@ -20,10 +20,12 @@
 #ifndef _THRIFT_CONCURRENCY_FUNCTION_RUNNER_H
 #define _THRIFT_CONCURRENCY_FUNCTION_RUNNER_H 1
 
-#include <tr1/functional>
-#include "thrift/lib/cpp/concurrency/Thread.h"
+#include <thrift/cxxfunctional.h>
+#include <thrift/concurrency/Thread.h>
 
-namespace apache { namespace thrift { namespace concurrency {
+namespace apache {
+namespace thrift {
+namespace concurrency {
 
 /**
  * Convenient implementation of Runnable that will execute arbitrary callbacks.
@@ -42,18 +44,18 @@ namespace apache { namespace thrift { namespace concurrency {
  *  A* a = new A();
  *  // To create a thread that executes a.foo() every 100 milliseconds:
  *  factory->newThread(FunctionRunner::create(
- *    std::tr1::bind(&A::foo, a), 100))->start();
+ *    apache::thrift::stdcxx::bind(&A::foo, a), 100))->start();
  *
  */
 
 class FunctionRunner : public Runnable {
- public:
+public:
   // This is the type of callback 'pthread_create()' expects.
-  typedef void* (*PthreadFuncPtr)(void *arg);
+  typedef void* (*PthreadFuncPtr)(void* arg);
   // This a fully-generic void(void) callback for custom bindings.
-  typedef std::tr1::function<void()> VoidFunc;
+  typedef apache::thrift::stdcxx::function<void()> VoidFunc;
 
-  typedef std::tr1::function<bool()> BoolFunc;
+  typedef apache::thrift::stdcxx::function<bool()> BoolFunc;
 
   /**
    * Syntactic sugar to make it easier to create new FunctionRunner
@@ -63,26 +65,28 @@ class FunctionRunner : public Runnable {
     return boost::shared_ptr<FunctionRunner>(new FunctionRunner(cob));
   }
 
-  static boost::shared_ptr<FunctionRunner> create(PthreadFuncPtr func,
-                                                  void* arg) {
+  static boost::shared_ptr<FunctionRunner> create(PthreadFuncPtr func, void* arg) {
     return boost::shared_ptr<FunctionRunner>(new FunctionRunner(func, arg));
   }
 
+private:
+  static void pthread_func_wrapper(PthreadFuncPtr func, void* arg) {
+    // discard return value
+    func(arg);
+  }
 
+public:
   /**
    * Given a 'pthread_create' style callback, this FunctionRunner will
    * execute the given callback.  Note that the 'void*' return value is ignored.
    */
   FunctionRunner(PthreadFuncPtr func, void* arg)
-   : func_(std::tr1::bind(func, arg)), repFunc_(0)
-  { }
+    : func_(apache::thrift::stdcxx::bind(pthread_func_wrapper, func, arg)), intervalMs_(-1) {}
 
   /**
    * Given a generic callback, this FunctionRunner will execute it.
    */
-  FunctionRunner(const VoidFunc& cob)
-   : func_(cob), repFunc_(0)
-  { }
+  FunctionRunner(const VoidFunc& cob) : func_(cob), intervalMs_(-1) {}
 
   /**
    * Given a bool foo(...) type callback, FunctionRunner will execute
@@ -90,26 +94,25 @@ class FunctionRunner : public Runnable {
    * until it returns false. Note that the actual interval between calls will
    * be intervalMs plus execution time of the callback.
    */
-  FunctionRunner(const BoolFunc& cob, int intervalMs)
-   : func_(0), repFunc_(cob), intervalMs_(intervalMs)
-  { }
+  FunctionRunner(const BoolFunc& cob, int intervalMs) : repFunc_(cob), intervalMs_(intervalMs) {}
 
   void run() {
     if (repFunc_) {
-      while(repFunc_()) {
-        usleep(intervalMs_*1000);
+      while (repFunc_()) {
+        THRIFT_SLEEP_USEC(intervalMs_ * 1000);
       }
     } else {
       func_();
     }
   }
 
- private:
+private:
   VoidFunc func_;
   BoolFunc repFunc_;
   int intervalMs_;
 };
-
-}}} // apache::thrift::concurrency
+}
+}
+} // apache::thrift::concurrency
 
 #endif // #ifndef _THRIFT_CONCURRENCY_FUNCTION_RUNNER_H

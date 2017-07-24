@@ -29,7 +29,11 @@
 #include <sys/time.h>
 #endif
 
-namespace apache { namespace thrift { namespace concurrency {
+#include <thrift/transport/PlatformSocket.h>
+
+namespace apache {
+namespace thrift {
+namespace concurrency {
 
 /**
  * Utility methods
@@ -53,26 +57,28 @@ class Util {
   static const int64_t NS_PER_US = NS_PER_S / US_PER_S;
   static const int64_t US_PER_MS = US_PER_S / MS_PER_S;
 
- public:
-
+public:
   /**
-   * Converts millisecond timestamp into a timespec struct
+   * Converts millisecond timestamp into a THRIFT_TIMESPEC struct
    *
-   * @param struct timespec& result
+   * @param struct THRIFT_TIMESPEC& result
    * @param time or duration in milliseconds
    */
-  static void toTimespec(struct timespec& result, int64_t value) {
-    result.tv_sec = value / MS_PER_S; // ms to s
+  static void toTimespec(struct THRIFT_TIMESPEC& result, int64_t value) {
+    result.tv_sec = value / MS_PER_S;                // ms to s
     result.tv_nsec = (value % MS_PER_S) * NS_PER_MS; // ms to ns
   }
 
   static void toTimeval(struct timeval& result, int64_t value) {
-    result.tv_sec = (uint32_t)(value / MS_PER_S); // ms to s
-    result.tv_usec = (value % MS_PER_S) * US_PER_MS; // ms to us
+    result.tv_sec = static_cast<uint32_t>(value / MS_PER_S);                // ms to s
+    result.tv_usec = static_cast<uint32_t>((value % MS_PER_S) * US_PER_MS); // ms to us
   }
 
-  static void toTicks(int64_t& result, int64_t secs, int64_t oldTicks,
-                            int64_t oldTicksPerSec, int64_t newTicksPerSec) {
+  static void toTicks(int64_t& result,
+                      int64_t secs,
+                      int64_t oldTicks,
+                      int64_t oldTicksPerSec,
+                      int64_t newTicksPerSec) {
     result = secs * newTicksPerSec;
     result += oldTicks * newTicksPerSec / oldTicksPerSec;
 
@@ -82,43 +88,37 @@ class Util {
     }
   }
   /**
-   * Converts struct timespec to arbitrary-sized ticks since epoch
+   * Converts struct THRIFT_TIMESPEC to arbitrary-sized ticks since epoch
    */
-  static void toTicks(int64_t& result,
-                            const struct timespec& value,
-                            int64_t ticksPerSec) {
+  static void toTicks(int64_t& result, const struct THRIFT_TIMESPEC& value, int64_t ticksPerSec) {
     return toTicks(result, value.tv_sec, value.tv_nsec, NS_PER_S, ticksPerSec);
   }
 
   /**
    * Converts struct timeval to arbitrary-sized ticks since epoch
    */
-  static void toTicks(int64_t& result,
-                            const struct timeval& value,
-                            int64_t ticksPerSec) {
-    return toTicks(result, value.tv_sec, value.tv_usec, US_PER_S, ticksPerSec);
+  static void toTicks(int64_t& result, const struct timeval& value, int64_t ticksPerSec) {
+    return toTicks(result, (unsigned long)value.tv_sec, (unsigned long)value.tv_usec, US_PER_S, ticksPerSec);
   }
 
   /**
-   * Converts struct timespec to milliseconds
+   * Converts struct THRIFT_TIMESPEC to milliseconds
    */
-  static void toMilliseconds(int64_t& result,
-                                   const struct timespec& value) {
+  static void toMilliseconds(int64_t& result, const struct THRIFT_TIMESPEC& value) {
     return toTicks(result, value, MS_PER_S);
   }
 
   /**
    * Converts struct timeval to milliseconds
    */
-  static void toMilliseconds(int64_t& result,
-                                   const struct timeval& value) {
+  static void toMilliseconds(int64_t& result, const struct timeval& value) {
     return toTicks(result, value, MS_PER_S);
   }
 
   /**
-   * Converts struct timespec to microseconds
+   * Converts struct THRIFT_TIMESPEC to microseconds
    */
-  static void toUsec(int64_t& result, const struct timespec& value) {
+  static void toUsec(int64_t& result, const struct THRIFT_TIMESPEC& value) {
     return toTicks(result, value, US_PER_S);
   }
 
@@ -144,7 +144,8 @@ class Util {
    */
   static int64_t currentTimeUsec() { return currentTimeTicks(US_PER_S); }
 };
-
-}}} // apache::thrift::concurrency
+}
+}
+} // apache::thrift::concurrency
 
 #endif // #ifndef _THRIFT_CONCURRENCY_UTIL_H_

@@ -24,19 +24,21 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
+#include <thrift/thrift-config.h>
 
-#ifdef USE_BOOST_THREAD
+#if USE_BOOST_THREAD
 #include <boost/thread.hpp>
-#endif
-
+#elif USE_STD_THREAD
+#include <thread>
+#else
 #ifdef HAVE_PTHREAD_H
 #include <pthread.h>
 #endif
+#endif
 
-namespace apache { namespace thrift { namespace concurrency {
+namespace apache {
+namespace thrift {
+namespace concurrency {
 
 class Thread;
 
@@ -47,13 +49,13 @@ class Thread;
  */
 class Runnable {
 
- public:
-  virtual ~Runnable() {};
+public:
+  virtual ~Runnable(){};
   virtual void run() = 0;
 
   /**
    * Gets the thread object that is hosting this runnable object  - can return
-   * an empty boost::shared pointer if no references remain on thet thread  object
+   * an empty boost::shared pointer if no references remain on that thread object
    */
   virtual boost::shared_ptr<Thread> thread() { return thread_.lock(); }
 
@@ -63,7 +65,7 @@ class Runnable {
    */
   virtual void thread(boost::shared_ptr<Thread> value) { thread_ = value; }
 
- private:
+private:
   boost::weak_ptr<Thread> thread_;
 };
 
@@ -78,20 +80,25 @@ class Runnable {
  */
 class Thread {
 
- public:
-
-#ifdef USE_BOOST_THREAD
+public:
+#if USE_BOOST_THREAD
   typedef boost::thread::id id_t;
 
   static inline bool is_current(id_t t) { return t == boost::this_thread::get_id(); }
   static inline id_t get_current() { return boost::this_thread::get_id(); }
+#elif USE_STD_THREAD
+  typedef std::thread::id id_t;
+
+  static inline bool is_current(id_t t) { return t == std::this_thread::get_id(); }
+  static inline id_t get_current() { return std::this_thread::get_id(); }
 #else
   typedef pthread_t id_t;
+
   static inline bool is_current(id_t t) { return pthread_equal(pthread_self(), t); }
   static inline id_t get_current() { return pthread_self(); }
 #endif
 
-  virtual ~Thread() {};
+  virtual ~Thread(){};
 
   /**
    * Starts the thread. Does platform specific thread creation and
@@ -101,8 +108,9 @@ class Thread {
   virtual void start() = 0;
 
   /**
-   * Join this thread. Current thread blocks until this target thread
-   * completes.
+   * Join this thread. If this thread is joinable, the calling thread blocks
+   * until this thread completes.  If the target thread is not joinable, then
+   * nothing happens.
    */
   virtual void join() = 0;
 
@@ -116,12 +124,11 @@ class Thread {
    */
   virtual boost::shared_ptr<Runnable> runnable() const { return _runnable; }
 
- protected:
+protected:
   virtual void runnable(boost::shared_ptr<Runnable> value) { _runnable = value; }
 
- private:
+private:
   boost::shared_ptr<Runnable> _runnable;
-
 };
 
 /**
@@ -129,18 +136,43 @@ class Thread {
  * object for execution
  */
 class ThreadFactory {
+protected:
+  ThreadFactory(bool detached) : detached_(detached) { }
 
- public:
-  virtual ~ThreadFactory() {}
+public:
+  virtual ~ThreadFactory() { }
+
+  /**
+   * Gets current detached mode
+   */
+  bool isDetached() const { return detached_; }
+
+  /**
+   * Sets the detached disposition of newly created threads.
+   */
+  void setDetached(bool detached) { detached_ = detached; }
+
+  /**
+   * Create a new thread.
+   */
   virtual boost::shared_ptr<Thread> newThread(boost::shared_ptr<Runnable> runnable) const = 0;
 
-  /** Gets the current thread id or unknown_thread_id if the current thread is not a thrift thread */
+  /**
+   * Gets the current thread id or unknown_thread_id if the current thread is not a thrift thread
+   */
+  virtual Thread::id_t getCurrentThreadId() const = 0;
 
+  /**
+   * For code readability define the unknown/undefined thread id
+   */
   static const Thread::id_t unknown_thread_id;
 
-  virtual Thread::id_t getCurrentThreadId() const = 0;
+private:
+  bool detached_;
 };
 
-}}} // apache::thrift::concurrency
+}
+}
+} // apache::thrift::concurrency
 
 #endif // #ifndef _THRIFT_CONCURRENCY_THREAD_H_

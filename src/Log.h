@@ -3,30 +3,43 @@
 
 #include "Environment.h"
 
+#include <loglib/LogClient.h>
+#include <loglib/LogClientConfig.h>
 #include <Poco/Logger.h>
 #include <Poco/LogStream.h>
 #include <libgen.h>
 
+#if linux
+class LogClient;
+#endif
 
 class Log {
- public:
-  static Log& Instance() {
-    static Log log;
-    return log;
-  }
-  bool initialize(const Environment& env);
-  Poco::Logger& getLogger() const { return *logger_; }
+public:
+    static Log &Instance() {
+        static Log log;
+        return log;
+    }
 
- protected:
-  Log();
-  ~Log();
- private:
-  Poco::Logger *logger_;
-  bool isInitialized_;
+    bool initialize(const Environment &env);
 
- private:
-  Log& operator=(const Log&);
-  Log(const Log&);
+    Poco::Logger &getLogger() const { return *logger_; }
+
+protected:
+    Log();
+
+    ~Log();
+
+private:
+    Log &operator=(const Log &);
+
+    Log(const Log &);
+
+private:
+    Poco::Logger *logger_;
+    bool isInitialized_;
+#if linux
+    LogClient *client_;
+#endif
 };
 
 #define LOG_DEBUG if (Log::Instance().getLogger().debug()) \

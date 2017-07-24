@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6)
-project(msproxy_poco)
+project(msproxy)
 
 MESSAGE(STATUS "operation system is ${CMAKE_SYSTEM_NAME}")
 IF (CMAKE_SYSTEM_NAME MATCHES "Linux")
@@ -9,12 +9,29 @@ IF (CMAKE_SYSTEM_NAME MATCHES "Linux")
     set(MSPROXY_INCLUDE_PATH ${CMAKE_SOURCE_DIR}/third_party
             ${CMAKE_SOURCE_DIR}/third_party/loglib/include
             ${CMAKE_SOURCE_DIR}/third_party/poco/include)
+
     set(MSPROXY_LIBRARY_PATH ${CMAKE_SOURCE_DIR}/third_party/poco/lib/${OS_TYPE}
-            ${CMAKE_SOURCE_DIR}/third_party/loglib/lib/${OS_TYPE})
+            ${CMAKE_SOURCE_DIR}/third_party/loglib/lib/${OS_TYPE}
+            ${CMAKE_SOURCE_DIR}/third_party/lib/${OS_TYPE})
+
     set(MSPROXY_PACK_PATH ${CMAKE_SOURCE_DIR}/third_party/poco/lib/${OS_TYPE}/
             ${CMAKE_SOURCE_DIR}/third_party/loglib/lib/${OS_TYPE}/
             ${CMAKE_SOURCE_DIR}/third_party/lib/${OS_TYPE}/
             ${CMAKE_SOURCE_DIR}/conf/)
+
+    set(MSPROXY_LINK_LIBRARIES -lPocoFoundation
+            -lPocoNet
+            -lPocoUtil
+            -lPocoData
+            -lPocoDataMySQL
+            -lPocoRedis
+            -lboost_system
+            -lboost_filesystem
+            -lboost_thread
+            -lboost_chrono
+            -lthrift
+            -lLogClient)
+
 ELSEIF (CMAKE_SYSTEM_NAME MATCHES "Darwin")
     set(OS_TYPE "mac")
     set(CMAKE_SKIP_BUILD_RPATH FALSE)
@@ -24,9 +41,27 @@ ELSEIF (CMAKE_SYSTEM_NAME MATCHES "Darwin")
     set(MSPROXY_INCLUDE_PATH ${CMAKE_SOURCE_DIR}/third_party
             ${CMAKE_SOURCE_DIR}/third_party/loglib/include
             ${CMAKE_SOURCE_DIR}/third_party/poco/include)
+
     set(MSPROXY_LIBRARY_PATH ${CMAKE_SOURCE_DIR}/third_party/poco/lib/${OS_TYPE})
+
     set(MSPROXY_PACK_PATH ${CMAKE_SOURCE_DIR}/third_party/poco/lib/${OS_TYPE}/
             ${CMAKE_SOURCE_DIR}/conf/)
+
+    set(MSPROXY_LINK_LIBRARIES
+            -lPocoFoundation
+            -lPocoNet
+            -lPocoUtil
+            -lPocoData
+            -lPocoDataMySQL
+            -lPocoRedis
+            -lboost_system
+            #            -lboost_filesystem
+            #            -lboost_thread
+            #            -lboost_chrono
+            #            -lthrift
+            #            -lLogClient
+            )
+
 ELSE ()
     MESSAGE(STATUS "cannot support current system: ${CMAKE_SYSTEM_NAME}")
 ENDIF ()
@@ -36,9 +71,9 @@ include_directories(${MSPROXY_INCLUDE_PATH})
 link_directories(${MSPROXY_LIBRARY_PATH})
 file(GLOB SOURCES "src/*.cc")
 
-set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-g -O2 -std=c++11 -Wall ")
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-g -O0 -std=c++11 -DHAVE_NETDB_H=1")
 
 add_executable(ms_proxy ${SOURCES})
-target_link_libraries(ms_proxy -lPocoFoundation -lPocoNet -lPocoUtil -lPocoData -lPocoDataMySQL -lPocoRedis)
+target_link_libraries(ms_proxy ${MSPROXY_LINK_LIBRARIES})
 install(DIRECTORY ${MSPROXY_PACK_PATH} DESTINATION ${CMAKE_SOURCE_DIR}/bin PATTERN "*" PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ)
-install(TARGETS ms_proxy DESTINATION ${CMAKE_SOURCE_DIR}/bin  PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ)
+install(TARGETS ms_proxy DESTINATION ${CMAKE_SOURCE_DIR}/bin PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ)

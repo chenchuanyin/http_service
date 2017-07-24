@@ -1,11 +1,25 @@
 /* config.h.  Generated from config.hin by configure.  */
 /* config.hin.  Generated from configure.ac by autoheader.  */
 
+
+#ifndef CONFIG_H
+#define CONFIG_H
+
+
 /* Define if the AI_ADDRCONFIG symbol is unavailable */
 /* #undef AI_ADDRCONFIG */
 
 /* Possible value for SIGNED_RIGHT_SHIFT_IS */
 #define ARITHMETIC_RIGHT_SHIFT 1
+
+/* Defines automake version */
+#define AUTOMAKE_VERSION 
+
+/* Use *.h extension for parser header file */
+#define BISON_USE_PARSER_H_EXTENSION 1
+
+/* Defines bison version */
+#define BISON_VERSION 3.0.4
 
 /* Define to one of `_getb67', `GETB67', `getb67' for Cray-2 and Cray-YMP
    systems. This function is required for `alloca.c' support on those systems.
@@ -37,6 +51,9 @@
 /* Define to 1 if you have the `clock_gettime' function. */
 #define HAVE_CLOCK_GETTIME 1
 
+/* define if the compiler supports basic C++11 syntax */
+#define HAVE_CXX11 1
+
 /* Define to 1 if you have the declaration of `strerror_r', and to 0 if you
    don't. */
 #define HAVE_DECL_STRERROR_R 1
@@ -59,23 +76,32 @@
 /* Define to 1 if you have the `gethostbyname' function. */
 #define HAVE_GETHOSTBYNAME 1
 
+/* Define to 1 if you have the `gethostbyname_r' function. */
+/* #undef HAVE_GETHOSTBYNAME_R */
+
 /* Define to 1 if you have the `gettimeofday' function. */
 #define HAVE_GETTIMEOFDAY 1
+
+/* Define to 1 if you have the `inet_ntoa' function. */
+#define HAVE_INET_NTOA 1
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
 
+/* Define to 1 if you have the <lauxlib.h> header file. */
+/* #undef HAVE_LAUXLIB_H */
+
 /* define if libevent is available */
-#define HAVE_LIBEVENT /**/
+/* #undef HAVE_LIBEVENT */
 
 /* Define to 1 if you have the <libintl.h> header file. */
-#define HAVE_LIBINTL_H 1
+/* #undef HAVE_LIBINTL_H */
 
 /* Define to 1 if you have the `pthread' library (-lpthread). */
 #define HAVE_LIBPTHREAD 1
 
 /* Define to 1 if you have the `rt' library (-lrt). */
-#define HAVE_LIBRT 1
+/* #undef HAVE_LIBRT */
 
 /* Define to 1 if you have the `socket' library (-lsocket). */
 /* #undef HAVE_LIBSOCKET */
@@ -83,12 +109,21 @@
 /* Define to 1 if you have the <limits.h> header file. */
 #define HAVE_LIMITS_H 1
 
+/* Define to 1 if you have the <luaconf.h> header file. */
+/* #undef HAVE_LUACONF_H */
+
+/* Define to 1 if you have the <lualib.h> header file. */
+/* #undef HAVE_LUALIB_H */
+
+/* Define to 1 if you have the <lua.h> header file. */
+/* #undef HAVE_LUA_H */
+
 /* Define to 1 if your system has a GNU libc compatible `malloc' function, and
    to 0 otherwise. */
 #define HAVE_MALLOC 1
 
 /* Define to 1 if you have the <malloc.h> header file. */
-#define HAVE_MALLOC_H 1
+/* #undef HAVE_MALLOC_H */
 
 /* Define to 1 if you have the `memmove' function. */
 #define HAVE_MEMMOVE 1
@@ -117,6 +152,9 @@
 /* Define to 1 if you have the <openssl/x509v3.h> header file. */
 #define HAVE_OPENSSL_X509V3_H 1
 
+/* Define to 1 if you have the `pow' function. */
+#define HAVE_POW 1
+
 /* Define to 1 if you have the <pthread.h> header file. */
 #define HAVE_PTHREAD_H 1
 
@@ -142,6 +180,9 @@
 /* Define to 1 if you have the `select' function. */
 #define HAVE_SELECT 1
 
+/* Define to 1 if you have the `setlocale' function. */
+#define HAVE_SETLOCALE 1
+
 /* Define to 1 if you have the `socket' function. */
 #define HAVE_SOCKET 1
 
@@ -153,7 +194,7 @@
 /* #undef HAVE_STAT_EMPTY_STRING_BUG */
 
 /* Define to 1 if stdbool.h conforms to C99. */
-#define HAVE_STDBOOL_H 1
+/* #undef HAVE_STDBOOL_H */
 
 /* Define to 1 if you have the <stddef.h> header file. */
 #define HAVE_STDDEF_H 1
@@ -236,6 +277,9 @@
 /* Define to 1 if you have the `vprintf' function. */
 #define HAVE_VPRINTF 1
 
+/* Define to 1 if you have the <wchar.h> header file. */
+#define HAVE_WCHAR_H 1
+
 /* Define to 1 if `fork' works. */
 #define HAVE_WORKING_FORK 1
 
@@ -253,7 +297,7 @@
 
 /* Define to 1 if `lstat' dereferences a symlink specified with a trailing
    slash. */
-#define LSTAT_FOLLOWS_SLASHED_SYMLINK 1
+/* #undef LSTAT_FOLLOWS_SLASHED_SYMLINK */
 
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */
@@ -269,7 +313,7 @@
 #define PACKAGE_NAME "thrift"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "thrift 0.9.0"
+#define PACKAGE_STRING "thrift 0.10.0"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "thrift"
@@ -278,7 +322,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "0.9.0"
+#define PACKAGE_VERSION "0.10.0"
 
 /* Define as the return type of signal handlers (`int' or `void'). */
 #define RETSIGTYPE void
@@ -308,7 +352,7 @@
 #define STDC_HEADERS 1
 
 /* Define to 1 if strerror_r returns char *. */
-#define STRERROR_R_CHAR_P 1
+/* #undef STRERROR_R_CHAR_P */
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #define TIME_WITH_SYS_TIME 1
@@ -324,11 +368,11 @@
 /* #undef USE_BOOST_THREAD */
 
 /* Version number of package */
-#define VERSION "0.9.0"
+#define VERSION "0.10.0"
 
 /* Define to 1 if `lex' declares `yytext' as a `char *' by default, not a
    `char[]'. */
-/* #undef YYTEXT_POINTER */
+#define YYTEXT_POINTER 1
 
 /* Define for Solaris 2.5.1 so the uint32_t typedef from <sys/synch.h>,
    <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
@@ -413,3 +457,7 @@
 /* Define to empty if the keyword `volatile' does not work. Warning: valid
    code using `volatile' can become incorrect without. Disable with care. */
 /* #undef volatile */
+
+
+#endif
+

@@ -20,11 +20,13 @@
 #ifndef _THRIFT_CONCURRENCY_POSIXTHREADFACTORY_H_
 #define _THRIFT_CONCURRENCY_POSIXTHREADFACTORY_H_ 1
 
-#include "Thread.h"
+#include <thrift/concurrency/Thread.h>
 
 #include <boost/shared_ptr.hpp>
 
-namespace apache { namespace thrift { namespace concurrency {
+namespace apache {
+namespace thrift {
+namespace concurrency {
 
 /**
  * A thread factory to create posix threads
@@ -33,23 +35,18 @@ namespace apache { namespace thrift { namespace concurrency {
  */
 class PosixThreadFactory : public ThreadFactory {
 
- public:
-
+public:
   /**
    * POSIX Thread scheduler policies
    */
-  enum POLICY {
-    OTHER,
-    FIFO,
-    ROUND_ROBIN
-  };
+  enum POLICY { OTHER, FIFO, ROUND_ROBIN };
 
   /**
    * POSIX Thread scheduler relative priorities,
    *
    * Absolute priority is determined by scheduler policy and OS. This
    * enumeration specifies relative priorities such that one can specify a
-   * priority withing a giving scheduler policy without knowing the absolute
+   * priority within a giving scheduler policy without knowing the absolute
    * value of the priority.
    */
   enum PRIORITY {
@@ -77,8 +74,18 @@ class PosixThreadFactory : public ThreadFactory {
    *
    * By default threads are not joinable.
    */
+  PosixThreadFactory(POLICY policy = ROUND_ROBIN,
+                     PRIORITY priority = NORMAL,
+                     int stackSize = 1,
+                     bool detached = true);
 
-  PosixThreadFactory(POLICY policy=ROUND_ROBIN, PRIORITY priority=NORMAL, int stackSize=1, bool detached=true);
+  /**
+   * Provide a constructor compatible with the other factories
+   * The default policy is POLICY::ROUND_ROBIN.
+   * The default priority is PRIORITY::NORMAL.
+   * The default stackSize is 1.
+   */
+  PosixThreadFactory(bool detached);
 
   // From ThreadFactory;
   boost::shared_ptr<Thread> newThread(boost::shared_ptr<Runnable> runnable) const;
@@ -87,14 +94,14 @@ class PosixThreadFactory : public ThreadFactory {
   Thread::id_t getCurrentThreadId() const;
 
   /**
-   * Gets stack size for created threads
+   * Gets stack size for newly created threads
    *
    * @return int size in megabytes
    */
   virtual int getStackSize() const;
 
   /**
-   * Sets stack size for created threads
+   * Sets stack size for newly created threads
    *
    * @param value size in megabytes
    */
@@ -110,21 +117,13 @@ class PosixThreadFactory : public ThreadFactory {
    */
   virtual void setPriority(PRIORITY priority);
 
-  /**
-   * Sets detached mode of threads
-   */
-  virtual void setDetached(bool detached);
-
-  /**
-   * Gets current detached mode
-   */
-  virtual bool isDetached() const;
-
- private:
-  class Impl;
-  boost::shared_ptr<Impl> impl_;
+private:
+  POLICY policy_;
+  PRIORITY priority_;
+  int stackSize_;
 };
-
-}}} // apache::thrift::concurrency
+}
+}
+} // apache::thrift::concurrency
 
 #endif // #ifndef _THRIFT_CONCURRENCY_POSIXTHREADFACTORY_H_

@@ -20,15 +20,17 @@
 #ifndef _THRIFT_CONCURRENCY_TIMERMANAGER_H_
 #define _THRIFT_CONCURRENCY_TIMERMANAGER_H_ 1
 
-#include "Exception.h"
-#include "Monitor.h"
-#include "Thread.h"
+#include <thrift/concurrency/Exception.h>
+#include <thrift/concurrency/Monitor.h>
+#include <thrift/concurrency/Thread.h>
 
 #include <boost/shared_ptr.hpp>
 #include <map>
 #include <time.h>
 
-namespace apache { namespace thrift { namespace concurrency {
+namespace apache {
+namespace thrift {
+namespace concurrency {
 
 /**
  * Timer Manager
@@ -39,8 +41,7 @@ namespace apache { namespace thrift { namespace concurrency {
  */
 class TimerManager {
 
- public:
-
+public:
   TimerManager();
 
   virtual ~TimerManager();
@@ -61,7 +62,7 @@ class TimerManager {
    */
   virtual void stop();
 
-  virtual size_t taskCount() const ;
+  virtual size_t taskCount() const;
 
   /**
    * Adds a task to be executed at some time in the future by a worker thread.
@@ -77,7 +78,15 @@ class TimerManager {
    * @param task The task to execute
    * @param timeout Absolute time in the future to execute task.
    */
-  virtual void add(boost::shared_ptr<Runnable> task, const struct timespec& timeout);
+  virtual void add(boost::shared_ptr<Runnable> task, const struct THRIFT_TIMESPEC& timeout);
+
+  /**
+   * Adds a task to be executed at some time in the future by a worker thread.
+   *
+   * @param task The task to execute
+   * @param timeout Absolute time in the future to execute task.
+   */
+  virtual void add(boost::shared_ptr<Runnable> task, const struct timeval& timeout);
 
   /**
    * Removes a pending task
@@ -91,17 +100,11 @@ class TimerManager {
    */
   virtual void remove(boost::shared_ptr<Runnable> task);
 
-  enum STATE {
-    UNINITIALIZED,
-    STARTING,
-    STARTED,
-    STOPPING,
-    STOPPED
-  };
+  enum STATE { UNINITIALIZED, STARTING, STARTED, STOPPING, STOPPED };
 
   virtual STATE state() const;
 
- private:
+private:
   boost::shared_ptr<const ThreadFactory> threadFactory_;
   class Task;
   friend class Task;
@@ -116,7 +119,8 @@ class TimerManager {
   typedef std::multimap<int64_t, boost::shared_ptr<TimerManager::Task> >::iterator task_iterator;
   typedef std::pair<task_iterator, task_iterator> task_range;
 };
-
-}}} // apache::thrift::concurrency
+}
+}
+} // apache::thrift::concurrency
 
 #endif // #ifndef _THRIFT_CONCURRENCY_TIMERMANAGER_H_
