@@ -1,6 +1,4 @@
 .idea
-*.so
-*.dylib
 *.a
 .DS_Store
 build/
