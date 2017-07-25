@@ -209,22 +209,4 @@ void HttpGetRequestHandler::convertParam(nlohmann::json &param) {
     param["versionNo"] = versionNo;
 }
 
-std::string HttpGetRequestHandler::genSearchRequest(const nlohmann::json &param) {
-    LOG_DEBUG << "param:" << param.dump() << "\n";
-    nlohmann::json json;
-    json["pagestart"] = param["pageIndex"];
-    json["countofpage"] = param["pageSize"];
-    json["uuid"] = param["uuid"];
-    json["text"] = param["text"];
-    json["category"] = param["categoryType"];
-    json["source"] = param["source"];
-    json["istoler"] = param["isCorrect"];
-    json["searchtype"] = param["searchType"];
-    json["kyfilter"] = param["isCopyright"];
-    json["kyonlyvip"] = param["isVip"];
-    json["copyright"] = param["copyrightType"];
-    LOG_INFO << "request param: " << json << std::endl;
-    return json.dump();
-}
-
 

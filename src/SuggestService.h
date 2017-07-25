@@ -17,6 +17,9 @@ public:
 
 private:
     std::string genRequestParam(const nlohmann::json &param);
+
+    EngineRequestReply dataFilter(EngineRequestReply &data);
+
 private:
     nlohmann::json param_;
     Poco::AutoPtr<EnginePool> enginePool_;

@@ -9,7 +9,7 @@
 #include <Poco/LogStream.h>
 #include <libgen.h>
 
-#if linux
+#ifdef __linux__
 class LogClient;
 #endif
 
@@ -37,7 +37,7 @@ private:
 private:
     Poco::Logger *logger_;
     bool isInitialized_;
-#if linux
+#ifdef __linux__
     LogClient *client_;
 #endif
 };

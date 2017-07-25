@@ -17,7 +17,7 @@ bool Log::initialize(const Environment &env) {
     logger_ = &Poco::Logger::root();
     Poco::Util::LoggingConfigurator loggingConfigurator;
     loggingConfigurator.configure(env.getConfiguration());
-#if linux
+#ifdef __linux__
     client_ = LogClient::GetInstance(Environment::Instance().getString("default.flume.path"));
 #endif
     isInitialized_ = true;

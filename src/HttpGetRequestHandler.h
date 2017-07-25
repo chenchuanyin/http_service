@@ -24,8 +24,6 @@ public:
 private:
     Poco::AutoPtr<EnginePool> enginePool_;
     Poco::AutoPtr<RedisPool> redisPool_;
-
-    std::string genSearchRequest(const nlohmann::json &param);
 };
 
 #endif // __SEARCH_HEADLER_H__
