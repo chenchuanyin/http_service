@@ -11,48 +11,45 @@
 
 RedisClient::RedisClient(std::string host, int port, std::string db)
         : host_(host), port_(port), db_(db), isConnected_(false) {
-    LOG_DEBUG << "construct， host:" << host_ << ",port:" << port_ << "\n";
+    LOG_DEBUG("construct, host:%s, port:%d, db:%s", host_.c_str(), port_, db_.c_str());
     try {
         Poco::Timespan timespan(5, 0);
         client_.connect(host_, port_, timespan);
         isConnected_ = true;
         selectDB(db);
-        LOG_INFO << "connected to redis server[" << host_
-                 << ":" << port_ << ":" << db_ << "]\n";
+        LOG_INFO("connected to redis server[%s:%d:%s]", host_.c_str(), port_, db_.c_str());
     }
     catch (Poco::Exception &ex) {
-        LOG_ERROR << ex.displayText() << "\n";
+        LOG_ERROR("%s", ex.displayText().c_str());
     }
 }
 
 RedisClient::RedisClient(std::string host, int port)
         : host_(host), port_(port), isConnected_(false) {
-    LOG_DEBUG << "construct， host:" << host_ << ",port:" << port_ << "\n";
+    LOG_DEBUG("construct, host:%s, port:%d", host_.c_str(), port_);
     try {
         client_.connect(host_, port_);
         isConnected_ = true;
         db_ = "0";
-        LOG_INFO << "connected to redis server[" << host_
-                 << ":" << port_ << "]\n";
+        LOG_INFO("connected to redis server[%s:%d:%s]", host_.c_str(), port_, db_.c_str());
     }
     catch (Poco::Exception &ex) {
-        LOG_ERROR << ex.displayText() << "\n";
+        LOG_ERROR("%s", ex.displayText().c_str());
     }
 }
 
 RedisClient::~RedisClient() {
-    LOG_DEBUG << "destruct, host:" << host_ << ",port:" << port_ << std::endl;
+    LOG_DEBUG("destruct, host:%s, port:%d, db:%s", host_.c_str(), port_, db_.c_str());
     if (isConnected_) {
         client_.disconnect();
         isConnected_ = false;
-        LOG_INFO << "disconnected from redis server[" << host_
-                 << ":" << port_ << "]\n";
+        LOG_INFO("disconnect from redis server[%s:%d:%s]", host_.c_str(), port_, db_.c_str());
     }
 }
 
 bool RedisClient::selectDB(std::string db) {
     if (false == isConnected_) {
-        LOG_WARN << "redis not connencted, skip" << std::endl;
+        LOG_WARN("redis not connencted, skip");
         return false;
     }
 
@@ -63,14 +60,14 @@ bool RedisClient::selectDB(std::string db) {
         return result.compare("OK") == 0 ? true : false;
     }
     catch (Poco::Exception &ex) {
-        LOG_ERROR << ex.displayText() << std::endl;
+        LOG_ERROR("%s", ex.displayText().c_str());
     }
 
 }
 
 bool RedisClient::sismember(const std::string &key, const std::string &member) {
     if (false == isConnected_) {
-        LOG_WARN << "redis not connencted, skip" << std::endl;
+        LOG_WARN("redis not connencted, skip");
         return false;
     }
 
@@ -80,13 +77,13 @@ bool RedisClient::sismember(const std::string &key, const std::string &member) {
         return result.compare("1") ? true : false;
     }
     catch (Poco::Exception &ex) {
-        LOG_ERROR << ex.displayText() << std::endl;
+        LOG_ERROR("%s", ex.displayText().c_str());
     }
 }
 
 bool RedisClient::setex(const std::string &key, const std::string &value, int expire) {
     if (false == isConnected_) {
-        LOG_WARN << "redis not connencted, skip" << std::endl;
+        LOG_WARN("redis not connencted, skip");
         return false;
     }
 
@@ -97,7 +94,7 @@ bool RedisClient::setex(const std::string &key, const std::string &value, int ex
         return result.compare("OK") == 0 ? true : false;
     }
     catch (Poco::Exception &ex) {
-        LOG_ERROR << ex.displayText() << std::endl;
+        LOG_ERROR("%s", ex.displayText().c_str());
     }
 }
 
@@ -107,7 +104,7 @@ bool RedisClient::set(const std::string &key, const std::string &value) {
 
 bool RedisClient::get(const std::string &key, std::string &value) {
     if (false == isConnected_) {
-        LOG_WARN << "redis not connencted, skip" << std::endl;
+        LOG_WARN("redis not connencted, skip");
         return false;
     }
 
@@ -115,17 +112,16 @@ bool RedisClient::get(const std::string &key, std::string &value) {
         Poco::Redis::Command command = Poco::Redis::Command::get(key);
         Poco::Redis::BulkString result = client_.execute<Poco::Redis::BulkString>(command);
         value = result.value();
-        LOG_DEBUG << result.value() << "\n";
         return true;
     }
     catch (Poco::Exception &ex) {
-        LOG_ERROR << ex.displayText() << std::endl;
+        LOG_ERROR("%s", ex.displayText().c_str());
     }
 }
 
 bool RedisClient::lrange(const std::string &key, const int offset, const int limit, Poco::Redis::Array &array) {
     if (false == isConnected_) {
-        LOG_WARN << "redis not connencted, skip" << std::endl;
+        LOG_WARN("redis not connencted, skip");
         return false;
     }
 
@@ -135,13 +131,13 @@ bool RedisClient::lrange(const std::string &key, const int offset, const int lim
         return true;
     }
     catch (Poco::Exception &ex) {
-        LOG_ERROR << ex.displayText() << std::endl;
+        LOG_ERROR("%s", ex.displayText().c_str());
     }
 }
 
 bool RedisClient::rpush(const std::string &key, const std::string &value) {
     if (false == isConnected_) {
-        LOG_WARN << "redis not connencted, skip" << std::endl;
+        LOG_WARN("redis not connencted, skip");
         return false;
     }
 
@@ -151,7 +147,7 @@ bool RedisClient::rpush(const std::string &key, const std::string &value) {
         return true;
     }
     catch (Poco::Exception &ex) {
-        LOG_ERROR << ex.displayText() << std::endl;
+        LOG_ERROR("%s", ex.displayText().c_str());
     }
 }
 

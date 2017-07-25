@@ -21,15 +21,13 @@ MySQLClient::MySQLClient(std::string host,
         sessionPool_ = new Poco::Data::SessionPool("MySQL", dbConnectStr);
         Poco::Data::Session session(sessionPool_->get());
         if (session.isConnected()) {
-            LOG_INFO << "connected to mysql, host:" << host
-                     << ", port:" << port << "\n";
+            LOG_INFO("connected to mysql, host:%s, port:%d", host.c_str(), port);
         } else {
-            LOG_ERROR << "connect to mysql(host:" << host
-                      << ",port:" << port << ") failed!\n";
+            LOG_ERROR("connect to mysql(%s:%d)", host.c_str(), port);
         }
     }
     catch (Poco::Exception &ex) {
-        LOG_ERROR << ex.displayText() << std::endl;
+        LOG_ERROR("%s", ex.displayText().c_str());
     }
 }
 

@@ -10,19 +10,18 @@
 
 Poco::Net::HTTPRequestHandler *
 HttpRequestHandlerFactory::createRequestHandler(const Poco::Net::HTTPServerRequest &request) {
-    LOG_INFO << "handleRequest, host:" << request.getHost()
-             << ", method:" << request.getMethod()
-             << ", uri:" << request.getURI() << "\n";
+    LOG_INFO("host:%s, method:%s, uri:%s", request.getHost().c_str(), request.getMethod().c_str(),
+             request.getURI().c_str());
     try {
         if ("GET" == request.getMethod()) {
             return new HttpGetRequestHandler(enginePool_, redisPool_);
         } else {
-            LOG_ERROR << "unsupport method:" << request.getMethod() << "\n";
+            LOG_ERROR("unsupport method:%s", request.getMethod().c_str());
             return new DefaultHandler(UNKNOWN_METHOD, "unsupport method:" + request.getMethod());
         }
     }
     catch (const Poco::Exception &ex) {
-        LOG_ERROR << ex.displayText() << "\n";
+        LOG_ERROR("%s", ex.displayText().c_str());
         return new DefaultHandler(UNKNOWN_ERROR, ex.displayText());
     }
 }

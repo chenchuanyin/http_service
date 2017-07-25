@@ -4,13 +4,13 @@
 #include "RedisClient.h"
 
 RedisPool::RedisPool() {
-    LOG_DEBUG << "construct\n";
+    LOG_DEBUG("construct");
     pool_.clear();
     random_.seed();
 }
 
 RedisPool::~RedisPool() {
-    LOG_DEBUG << "destruct\n";
+    LOG_DEBUG("destruct");
     pool_.clear();
 }
 
@@ -18,11 +18,11 @@ bool RedisPool::addClient(const std::string &host, int port, const std::string &
     Poco::AutoPtr<RedisClient> redisClientPtr = new RedisClient(host, port, db);
     std::string clientName = Poco::format("%s:%d:%s", host, port, db);
     if (redisClientPtr->isConnected()) {
-        LOG_INFO << "redis pool add new client:" << clientName << "\n";
+        LOG_INFO("redis pool add new client:%s", clientName.c_str());
         pool_.push_back(redisClientPtr);
         return true;
     } else {
-        LOG_ERROR << "redis[" << clientName << "] not online\n";
+        LOG_ERROR("redis[%s] not online", clientName.c_str());
         return false;
     }
 }
@@ -32,7 +32,7 @@ bool RedisPool::addClient(const std::string &host, int port) {
 }
 
 Poco::AutoPtr<RedisClient> RedisPool::getClient(const std::string &host, const int port, const std::string &db) {
-    LOG_INFO << "host:" << host << ", port:" << port << ", db:" << db << "\n";
+    LOG_INFO("host:%s, port:%d, db:%s", host.c_str(), port, db.c_str());
     std::string key = Poco::format("%s:%d:%s", host, port, db);
     return getClient(key);
 }
@@ -50,7 +50,7 @@ Poco::AutoPtr<RedisClient> RedisPool::getClient(const std::string &key) {
 }
 
 Poco::AutoPtr<RedisClient> RedisPool::getClient(const std::string &host, const int port) {
-    LOG_INFO << "host:" << host << ", port:" << port << "\n";
+    LOG_INFO("host:%s, port:%d", host.c_str(), port);
     std::string key = Poco::format("%s:%s:0", host, port);
     return getClient(key);
 }

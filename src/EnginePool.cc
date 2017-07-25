@@ -12,18 +12,18 @@
 #include <fstream>
 
 EnginePool::EnginePool() {
-    LOG_DEBUG << "construct\n";
+    LOG_DEBUG("construct");
     searchPool_.clear();
     suggestPool_.clear();
     random_.seed();
 }
 
 EnginePool::~EnginePool() {
-    LOG_DEBUG << "destruct\n";
+    LOG_DEBUG("destruct");
 }
 
 bool EnginePool::addClient(const std::string &ip, const int port, bool isSearch) {
-    LOG_INFO << "add engine client(" << ip << ":" << port << ")\n";
+    LOG_INFO("add engine client(%s:%d), isSearch:%s", ip.c_str(), port, isSearch ? "true" : "false");
     Poco::AutoPtr<EngineClient> client = new EngineClient(ip, port);
     if (isSearch) {
         searchPool_.push_back(client);
@@ -35,28 +35,29 @@ bool EnginePool::addClient(const std::string &ip, const int port, bool isSearch)
 }
 
 bool EnginePool::delClient(const std::string &ip, const int port, bool isSearch) {
-    LOG_INFO << "del engine client(" << ip << ":" << port << ")\n";
+    LOG_INFO("del engine client(%s:%d), isSearch:%s", ip.c_str(), port, isSearch ? "true" : "false");
+
     std::string key = Poco::format("%s:%d", ip, port);
     if (isSearch) {
         auto it = std::find(searchPool_.begin(), searchPool_.end(), key);
         if (it != searchPool_.end()) {
             searchPool_.erase(it);
         } else {
-            LOG_INFO << "search pool not contain a client(" << ip << ":" << port << ")\n";
+            LOG_INFO("search pool not contain a client(%s:%d)", ip.c_str(), port);
         }
     } else {
         auto it = std::find(suggestPool_.begin(), suggestPool_.end(), key);
         if (it != suggestPool_.end()) {
             suggestPool_.erase(it);
         } else {
-            LOG_INFO << "suggest pool not contain a client(" << ip << ":" << port << ")\n";
+            LOG_INFO("suggest pool not contain a client(%s:%d)", ip.c_str(), port);
         }
     }
     return true;
 }
 
 Poco::AutoPtr<EngineClient> EnginePool::getClient(const std::string &address, bool isSearch) {
-    LOG_DEBUG << "address:" << address << ",isSearch:" << isSearch << "\n";
+    LOG_DEBUG("address:%s, isSearch:%s", address.c_str(), isSearch ? "true" : "false");
     if (isSearch) {
         auto it = std::find(searchPool_.begin(), searchPool_.end(), address);
         if (it != searchPool_.end()) {
@@ -102,7 +103,7 @@ std::string EnginePool::genSearchRequestData(const std::string &request) {
 
     std::stringstream requestDataStream;
     requestDataStream << "SERVER0001" << preLenStr << modLenStr << mod << requestLenStr << request;
-    LOG_DEBUG << requestDataStream.str() << "\n";
+    LOG_DEBUG("%s", requestDataStream.str().c_str());
     return requestDataStream.str();
 }
 
@@ -123,7 +124,7 @@ std::string EnginePool::genSuggestRequestData(const std::string &request) {
 
     std::stringstream requestDataStream;
     requestDataStream << "ASSOSVR100" << preLenStr << modLenStr << mod << requestLenStr << request;
-    LOG_DEBUG << requestDataStream.str() << "\n";
+    LOG_DEBUG("%s", requestDataStream.str().c_str());
     return requestDataStream.str();
 }
 
@@ -132,17 +133,15 @@ EngineRequestReply EnginePool::handleRequest(const std::string &param,
                                              const std::string &route,
                                              bool isSearchRequest,
                                              int retryCount) {
-    LOG_DEBUG << "param:" << param
-              << ",route:" << route
-              << ",isSearchRequest:" << isSearchRequest
-              << ",retryCount:" << retryCount << "\n";
+    LOG_DEBUG("param:%s, route:%s, isSearchRequest:%s, retryCount:%d", param.c_str(), route.c_str(),
+              isSearchRequest ? "true" : "false", retryCount);
     Poco::ScopedLock<Poco::Mutex> scopedLock(mutex_);
     EngineRequestReply requestReply;
     Poco::AutoPtr<EngineClient> client = getClient(route, isSearchRequest);
     try {
         Poco::Timestamp::TimeVal startTime = getCurrentTime();
         if (NULL == client) {
-            LOG_ERROR << "cannot find engine(" << route << ") from engine pool\n";
+            LOG_ERROR("cannot find engine(%s) from engine pool",route.c_str());
             requestReply.error["rc"] = UNAVAILABLE_ENGINE;
             requestReply.error["error"] = "内部服务异常";
             return requestReply;
@@ -171,15 +170,17 @@ EngineRequestReply EnginePool::handleRequest(const std::string &param,
             remainLength = replyDataSectionSize - allRecvLength;
         }
         std::string replyData(replyDataSection, replyDataSectionSize);
-        LOG_DEBUG << "reply data:" << replyData << std::endl;
+        LOG_DEBUG("reply data:%s", replyData.c_str());
         requestReply.engineReply = nlohmann::json::parse(replyData);
-        LOG_DEBUG << "reply json:" << requestReply.engineReply << std::endl;
+        std::stringstream engineReplySS;
+        engineReplySS << requestReply.engineReply;
+        LOG_DEBUG("reply json:%s", engineReplySS.str().c_str());
         requestReply.statistics["recvTime"] = (getCurrentTime() - startTime) / MICROSECONDS_PER_SECOND;
         requestReply.error["rc"] = SUCCESS;
         return requestReply;
     }
     catch (Poco::Exception &ex) {
-        LOG_ERROR << ex.displayText() << "\n";
+        LOG_ERROR("%s", ex.displayText().c_str());
         if (3 < retryCount) {
             requestReply.error["rc"] = UNAVAILABLE_ENGINE;
             requestReply.error["error"] = ex.displayText();
@@ -195,12 +196,12 @@ Poco::UInt32 EnginePool::getReplyDataSectionSize(Poco::AutoPtr<EngineClient> cli
     char headSeg[10];
     int length = 0;
     if (10 != (length = client->socket().receiveBytes(headSeg, 10))) {
-        LOG_ERROR << "network exception, get 10 bytes head segment failed(length:" << length << ")\n";
+        LOG_ERROR("network exception, get 10 bytes head segment failed(length:%d)", length);
         return 0;
     }
     Poco::UInt32 sizeSeg;
     if (4 != (length = client->socket().receiveBytes((void *) &sizeSeg, 4))) {
-        LOG_ERROR << "network exception, get 4 bytes data section size segment failed(length:" << length << ")\n";
+        LOG_ERROR("network exception, get 4 bytes data section size segment failed(length:%d", length);
         return 0;
     }
     return Poco::ByteOrder::fromNetwork(sizeSeg);

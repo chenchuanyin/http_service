@@ -22,7 +22,7 @@ std::string Environment::getString(const std::string &key) {
         return configFile_->getString(key);
     }
     catch (Poco::Exception &ex) {
-        LOG_ERROR << ex.displayText() << "\n";
+        LOG_ERROR("%s", ex.displayText().c_str());
     }
 }
 
@@ -31,7 +31,7 @@ int Environment::getInt(const std::string &key) {
         return configFile_->getInt(key);
     }
     catch (Poco::Exception &ex) {
-        LOG_ERROR << ex.displayText() << "\n";
+        LOG_ERROR("%s", ex.displayText().c_str());
     }
 
 }
@@ -41,6 +41,6 @@ bool Environment::getBool(const std::string &key) {
         return configFile_->getBool(key);
     }
     catch (Poco::Exception &ex) {
-        LOG_ERROR << ex.displayText() << "\n";
+        LOG_ERROR("%s", ex.displayText().c_str());
     }
 }

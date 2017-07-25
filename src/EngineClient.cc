@@ -8,8 +8,9 @@
 
 #include <Poco/Format.h>
 
-EngineClient::EngineClient(std::string ip, int port) : host_(ip), port_(port) {
-    LOG_DEBUG << "construct, host_:" << host_ << ",port:" << port_ << std::endl;
+EngineClient::EngineClient(std::string host, int port) : host_(host), port_(port) {
+    LOG_DEBUG("construct, host:%s, port:%d", host_.c_str(), port_);
+
     updateTime();
     try {
         Poco::Net::SocketAddress socketAddress(host_, port_);
@@ -18,12 +19,13 @@ EngineClient::EngineClient(std::string ip, int port) : host_(ip), port_(port) {
         status_ = socket_.available();
     }
     catch (Poco::Exception &ex) {
-        LOG_ERROR << ex.displayText() << "\n";
+        LOG_ERROR("%s",ex.displayText().c_str());
     }
 }
 
 EngineClient::~EngineClient() {
-    LOG_DEBUG << "destruct, host:" << host_ << ",port:" << port_ << "\n";
+    LOG_DEBUG("destruct, host:%s, port:%d", host_.c_str(), port_);
+
     if (socket_.available()) {
         socket_.shutdown();
         socket_.close();

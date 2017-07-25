@@ -5,9 +5,8 @@
 
 void DefaultHandler::handleRequest(Poco::Net::HTTPServerRequest &request,
                                    Poco::Net::HTTPServerResponse &response) {
-    LOG_INFO << "handleRequest, host:" << request.getHost()
-             << ", method:" << request.getMethod()
-             << ", uri:" << request.getURI() << "\n";
+    LOG_INFO("host:%s, method:%s, uri:%s", request.getHost().c_str(), request.getMethod().c_str(),
+             request.getURI().c_str());
     nlohmann::json result;
     result["rc"] = errorCode_;
     result["error"] = errorContent_;
@@ -17,5 +16,4 @@ void DefaultHandler::handleRequest(Poco::Net::HTTPServerRequest &request,
 
 DefaultHandler::DefaultHandler(const int errorCode, const std::string &errorContent)
         : errorCode_(errorCode), errorContent_(errorContent) {
-
 }

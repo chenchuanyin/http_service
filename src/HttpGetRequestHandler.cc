@@ -19,15 +19,13 @@ HttpGetRequestHandler::HttpGetRequestHandler(Poco::AutoPtr<EnginePool> enginePoo
 
 void HttpGetRequestHandler::handleRequest(Poco::Net::HTTPServerRequest &request,
                                           Poco::Net::HTTPServerResponse &response) {
-    LOG_INFO << "handleRequest, host:" << request.getHost()
-             << ", method:" << request.getMethod()
-             << ", uri:" << request.getURI() << "\n";
+    LOG_INFO("host:%s, method:%s, uri:%s", request.getHost().c_str(), request.getMethod().c_str(),
+             request.getURI().c_str());
     response.setContentType("application/json");
     response.setKeepAlive(false);
     try {
         Poco::URI uri(request.getURI());
-        LOG_INFO << "path: " << uri.getPath()
-                 << ", query:" << uri.getQuery() << "\n";
+        LOG_INFO("path:%s,, query:%s", uri.getPath().c_str(), uri.getQuery().c_str());
         nlohmann::json param;
         param["path"] = uri.getPath();
         param["uuid"] = Util::getUUIDFromName(uri.toString());
@@ -44,11 +42,11 @@ void HttpGetRequestHandler::handleRequest(Poco::Net::HTTPServerRequest &request,
                 result.erase("fromCache");
             }
         } else {
-            LOG_ERROR << "wrong request,result:" << result.dump() << "\n";
+            LOG_ERROR("wrong request,result:%s", result.dump().c_str());
         }
         response.sendBuffer(result.dump().c_str(), result.dump().size());
     } catch (std::exception &ex) {
-        LOG_ERROR << ex.what() << "\n";
+        LOG_ERROR("%s", ex.what());
         nlohmann::json result;
         result["rc"] = UNKNOWN_ERROR;
         result["error"] = ex.what();
@@ -57,7 +55,7 @@ void HttpGetRequestHandler::handleRequest(Poco::Net::HTTPServerRequest &request,
 }
 
 void HttpGetRequestHandler::handle(nlohmann::json &param, nlohmann::json &result) {
-    LOG_DEBUG << "param:" << param.dump() << "\n";
+    LOG_DEBUG("param:%s",param.dump().c_str());
     nlohmann::json cacheKey;
     cacheKey["versionNo"] = param["versionNo"];
     cacheKey["path"] = param["path"];

@@ -8,7 +8,7 @@ AuthHelper::AuthHelper() {
     try {
         needAuth_ = Environment::Instance().getInt("default.need_auth") == 1 ? true : false;
     } catch (Poco::Exception &ex) {
-        LOG_ERROR << ex.displayText() << "\n";
+        //LOG_ERROR << ex.displayText() << "\n";
     }
 
 }
@@ -31,7 +31,7 @@ void AuthHelper::auth(const std::string &appid,
             return;
         }
     } catch (Poco::Exception &ex) {
-        LOG_ERROR << ex.displayText() << "\n";
+        LOG_ERROR("%s", ex.displayText().c_str());
     }
 }
 void AuthHelper::load_appkeys() {

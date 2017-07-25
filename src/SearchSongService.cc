@@ -16,7 +16,7 @@ SearchSongService::SearchSongService(nlohmann::json &param, Poco::AutoPtr<Engine
 }
 
 std::string SearchSongService::genRequestParam(const nlohmann::json &param) {
-    LOG_DEBUG << "param:" << param.dump() << "\n";
+    LOG_DEBUG("param:%s", param.dump().c_str());
     nlohmann::json json;
     json["pagestart"] = param["pageIndex"];
     json["countofpage"] = param["pageSize"];
@@ -41,12 +41,12 @@ std::string SearchSongService::genRequestParam(const nlohmann::json &param) {
         json["appVersion"] = param["app.ver"];
     json["iskeepalive"] = Environment::Instance().getInt("suggest.iskeepalive");
 
-    LOG_INFO << "request param: " << json << std::endl;
+    LOG_INFO("request param:%s", json.dump().c_str());
     return json.dump();
 }
 
 EngineRequestReply SearchSongService::operator()() {
-    LOG_DEBUG << "param:" << param_.dump() << "\n";
+    LOG_DEBUG("param:%s", param_.dump().c_str());
     int source = param_["source"];
     int categoryIndex = param_["category"];
     std::string categoryType;
@@ -116,6 +116,6 @@ EngineRequestReply SearchSongService::dataFilter(EngineRequestReply &data) {
         item["isVip"] = results[i]["isvip"];
         result.engineReply["data"]["result"].push_back(item);
     }
-    LOG_DEBUG << result.engineReply << std::endl;
+    LOG_DEBUG("%s", result.engineReply.dump().c_str());
     return result;
 }
