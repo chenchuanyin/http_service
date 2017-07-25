@@ -103,12 +103,6 @@ std::string EnginePool::genSearchRequestData(const std::string &request) {
     std::stringstream requestDataStream;
     requestDataStream << "SERVER0001" << preLenStr << modLenStr << mod << requestLenStr << request;
     LOG_DEBUG << requestDataStream.str() << "\n";
-    std::ofstream tmpFile;
-    tmpFile.open("test.dat", std::ios::binary);
-    if (tmpFile.is_open())
-        tmpFile.write(requestDataStream.str().c_str(), requestDataStream.str().size());
-    else LOG_WARN << "file cannot open\n";
-    tmpFile.close();
     return requestDataStream.str();
 }
 
@@ -130,18 +124,18 @@ std::string EnginePool::genSuggestRequestData(const std::string &request) {
     std::stringstream requestDataStream;
     requestDataStream << "ASSOSVR100" << preLenStr << modLenStr << mod << requestLenStr << request;
     LOG_DEBUG << requestDataStream.str() << "\n";
-    std::ofstream tmpFile;
-    tmpFile.open("test.dat", std::ios::binary);
-    if (tmpFile.is_open())
-        tmpFile.write(requestDataStream.str().c_str(), requestDataStream.str().size());
-    else LOG_WARN << "file cannot open\n";
-    tmpFile.close();
     return requestDataStream.str();
 }
 
 
-EngineRequestReply EnginePool::handleRequest(const std::string &param, const std::string &route, bool isSearchRequest) {
-    LOG_DEBUG << "param:" << param << ",route:" << route << ",isSearchRequest:" << isSearchRequest << "\n";
+EngineRequestReply EnginePool::handleRequest(const std::string &param,
+                                             const std::string &route,
+                                             bool isSearchRequest,
+                                             int retryCount) {
+    LOG_DEBUG << "param:" << param
+              << ",route:" << route
+              << ",isSearchRequest:" << isSearchRequest
+              << ",retryCount:" << retryCount << "\n";
     Poco::ScopedLock<Poco::Mutex> scopedLock(mutex_);
     EngineRequestReply requestReply;
     Poco::AutoPtr<EngineClient> client = getClient(route, isSearchRequest);
@@ -163,7 +157,7 @@ EngineRequestReply EnginePool::handleRequest(const std::string &param, const std
         Poco::UInt32 replyDataSectionSize = getReplyDataSectionSize(client, isSearchRequest);
         if (0 == replyDataSectionSize) {
             client->reconnect();
-            return handleRequest(param, route, isSearchRequest);
+            return handleRequest(param, route, isSearchRequest, ++retryCount);
         }
 
         char replyDataSection[replyDataSectionSize];
@@ -186,9 +180,14 @@ EngineRequestReply EnginePool::handleRequest(const std::string &param, const std
     }
     catch (Poco::Exception &ex) {
         LOG_ERROR << ex.displayText() << "\n";
-        requestReply.error["rc"] = UNAVAILABLE_ENGINE;
-        requestReply.error["error"] = ex.displayText();
-        return requestReply;
+        if (3 < retryCount) {
+            requestReply.error["rc"] = UNAVAILABLE_ENGINE;
+            requestReply.error["error"] = ex.displayText();
+            return requestReply;
+        } else {
+            client->reconnect();
+            handleRequest(param, route, isSearchRequest, ++retryCount);
+        }
     }
 }
 

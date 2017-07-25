@@ -2,18 +2,19 @@
 // Created by silver chan on 2017/7/12.
 //
 
-#include "Application.h"
+#include "ProxyApplication.h"
 
 #include "Environment.h"
 #include "Log.h"
 #include "HttpRequestHandlerFactory.h"
 #include <Poco/StringTokenizer.h>
+#include <Poco/Util/HelpFormatter.h>
 
-Application::Application(const std::string &configFile)
+ProxyApplication::ProxyApplication(const std::string &configFile)
         : configFile_(configFile), httpServer_(NULL) {
 }
 
-Application::~Application() {
+ProxyApplication::~ProxyApplication() {
     if (httpServer_) {
         httpServer_->stop();
         delete httpServer_;
@@ -21,50 +22,25 @@ Application::~Application() {
     }
 }
 
-bool Application::init() {
-    if (initConfig()) {
-        fprintf(stdout, "init config completed\n");
-    } else {
-        fprintf(stderr, "init config failed!\n");
-        return false;
-    }
-    if (initLog()) {
-        LOG_INFO << "init log completed\n";
-    } else {
-        fprintf(stderr, "init log failed!\n");
-        return false;
-    }
-    if (initService()) {
-        LOG_INFO << "init service completed\n";
-    } else {
-        LOG_ERROR << "application init failed\n";
-        return false;
-    }
-    return true;
-}
 
-bool Application::unInit() {
-    return true;
-}
-
-bool Application::initConfig() {
+bool ProxyApplication::initConfig() {
     bool result = Environment::Instance().initialize(configFile_);
     return result;
 }
 
-bool Application::initLog() {
+bool ProxyApplication::initLog() {
     bool result = Log::Instance().initialize(Environment::Instance());
     return result;
 }
 
-bool Application::initService() {
+bool ProxyApplication::initService() {
     initRedisPool();
     initEnginePool();
     initHttpServer();
     return true;
 }
 
-bool Application::initHttpServer() {
+bool ProxyApplication::initHttpServer() {
     LOG_INFO << "start to init http server.\n";
     try {
         int port = Environment::Instance().getInt("http.port");
@@ -83,7 +59,7 @@ bool Application::initHttpServer() {
     }
 }
 
-bool Application::initRedisPool() {
+bool ProxyApplication::initRedisPool() {
     redisPool_ = new RedisPool();
     std::string redisCache = Environment::Instance().getString("redis.redis_cache");
     addRedis(redisCache);
@@ -94,7 +70,7 @@ bool Application::initRedisPool() {
     return true;
 }
 
-bool Application::addRedis(const std::string &redisAddress) {
+bool ProxyApplication::addRedis(const std::string &redisAddress) {
     Poco::StringTokenizer splitterTokenizer(redisAddress, ":");
     if (splitterTokenizer.count() == 2) {
         return redisPool_->addClient(splitterTokenizer[0], std::atoi(splitterTokenizer[1].c_str()));
@@ -107,7 +83,7 @@ bool Application::addRedis(const std::string &redisAddress) {
     }
 }
 
-bool Application::initEnginePool() {
+bool ProxyApplication::initEnginePool() {
     enginePool_ = new EnginePool();
     std::string searchEngineAddresses = Environment::Instance().getString("engine.address");
     LOG_INFO << "search engine:" << searchEngineAddresses << "\n";
@@ -116,8 +92,7 @@ bool Application::initEnginePool() {
         Poco::StringTokenizer splitTokenizer(searchCountTokenizer[i], ":");
         if (splitTokenizer.count() == 2) {
             enginePool_->addClient(splitTokenizer[0], std::atoi(splitTokenizer[1].c_str()), true);
-        }
-        else {
+        } else {
             LOG_ERROR << "wrong format for engine address, content:" << searchCountTokenizer[i] << "\n";
         }
     }
@@ -128,16 +103,43 @@ bool Application::initEnginePool() {
         Poco::StringTokenizer splitTokenizer(suggestCountTokenizer[i], ":");
         if (splitTokenizer.count() == 2) {
             enginePool_->addClient(splitTokenizer[0], std::atoi(splitTokenizer[1].c_str()), false);
-        }
-        else {
+        } else {
             LOG_ERROR << "wrong format for engine address, content:" << suggestCountTokenizer[i] << "\n";
         }
     }
 }
 
-void Application::run() {
-    httpServer_->start();
+void ProxyApplication::uninit() {
+}
+
+void ProxyApplication::init() {
+    if (initConfig()) {
+        fprintf(stdout, "init config completed\n");
+    } else {
+        fprintf(stderr, "init config failed!\n");
+        throw Poco::Exception("init config failed");
+    }
+    if (initLog()) {
+        LOG_INFO << "init log completed\n";
+    } else {
+        fprintf(stderr, "init log failed!\n");
+        throw Poco::Exception("init log failed");
+    }
+    if (initService()) {
+        LOG_INFO << "init service completed\n";
+    } else {
+        LOG_ERROR << "init service failed\n";
+        throw Poco::Exception("init service failed");
+    }
 }
 
 
+int ProxyApplication::main(const std::vector<std::string> &args) {
+    httpServer_->start();
+    LOG_INFO << "server start...\n";
+    waitForTerminationRequest();
+    httpServer_->stop();
+    LOG_INFO << "server stop...\n";
+    return Poco::Util::Application::EXIT_OK;
+}
 

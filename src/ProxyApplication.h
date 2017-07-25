@@ -10,18 +10,20 @@
 
 #include <Poco/Net/HTTPServer.h>
 #include <Poco/Net/SocketReactor.h>
+#include <Poco/Util/ServerApplication.h>
 
-class Application {
+class ProxyApplication  : public Poco::Util::ServerApplication {
 public:
-    Application(const std::string &configFile = "default.conf");
+    ProxyApplication(const std::string &configFile = "default.conf");
 
-    ~Application();
+    ~ProxyApplication();
 
-    bool init();
+    void init();
 
-    void run();
+    void uninit();
 
-    bool unInit();
+protected:
+    int main(const std::vector<std::string> &args);
 
 private:
     bool initConfig();
@@ -38,16 +40,15 @@ private:
 
     bool addRedis(const std::string &redisAddress);
 
-    Application &operator=(const Application &);
+    ProxyApplication &operator=(const ProxyApplication &);
 
-    Application(const Application &);
+    ProxyApplication(const ProxyApplication &);
 
 private:
     std::string configFile_;
     Poco::Net::HTTPServer *httpServer_;
     Poco::AutoPtr<RedisPool> redisPool_;
     Poco::AutoPtr<EnginePool> enginePool_;
-
 };
 
 

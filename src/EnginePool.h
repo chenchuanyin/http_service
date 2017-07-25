@@ -24,7 +24,8 @@ public:
 
     Poco::AutoPtr<EngineClient> getClient(const std::string &address, bool isSearch);
 
-    EngineRequestReply handleRequest(const std::string &param, const std::string &route, bool isSearchRequest);
+    EngineRequestReply
+    handleRequest(const std::string &param, const std::string &route, bool isSearchRequest, int retryCount = 0);
 
 private:
     std::string genSearchRequestData(const std::string &request);

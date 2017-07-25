@@ -1,13 +1,13 @@
-#include "Application.h"
+#include "ProxyApplication.h"
 #include "Log.h"
 
-
-int main(void) {
-    Application application("default.conf");
-    if (application.init()) {
-        application.run();
-        LOG_INFO << "服务开启\n";
+int main(int argc, char **argv) {
+    try {
+        ProxyApplication app("default.conf");
+        app.init();
+        app.run(argc, argv);
+    } catch (Poco::Exception &e) {
+        std::cerr << "some error:  " << e.what() << std::endl;
     }
-    getchar();
     return 0;
 }
